@@ -270,10 +270,8 @@
     .t-player {
       display: flex; align-items: center; gap: 7px;
       padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04);
-      cursor: pointer; transition: opacity .15s;
     }
     .t-player:last-child { border-bottom: none; }
-    .t-player:hover { opacity: .75; }
     .p-badge {
       width: 20px; height: 20px; border-radius: 50%;
       background: rgba(255,255,255,.08);
@@ -283,9 +281,6 @@
     .p-badge.cap { background: var(--gold); color: #000; font-weight: 900; }
     .p-badge.gk  { background: #0e2040; color: var(--blue); font-weight: 700; }
     .p-name  { flex: 1; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .p-stars { font-size: .62rem; color: var(--gold); letter-spacing: 0; }
-    .p-pin   { font-size: .72rem; opacity: .3; transition: opacity .15s; margin-left: 2px; }
-    .p-pin.on{ opacity: 1; color: var(--green); }
 
     /* ── LEFTOVER ───────────────────────────── */
     .leftover {
@@ -480,7 +475,6 @@
           <button class="btn btn-secondary" onclick="copyResult()">📋 Copiar</button>
           <button class="btn btn-ghost"     onclick="showHist()">🕘 Histórico</button>
         </div>
-        <p class="tip">Clique em um jogador para 📌 fixá-lo — ao ressortear ele fica no mesmo time</p>
       </div>
     </div>
 
@@ -532,16 +526,14 @@ let config      = { numTeams: 2, ppTeam: 5 };
 let sortMode    = 'random';   // 'random' | 'balanced'
 let opts        = { cap: false, gk: false };
 let currentTeams = [];
-let fixed       = {};   // playerId → teamIdx
 let history     = [];
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
 window.addEventListener('load', () => {
   try {
+    localStorage.removeItem('racha_fixed');
     const p = localStorage.getItem('racha_players');
     if (p) players = JSON.parse(p);
-    const f = localStorage.getItem('racha_fixed');
-    if (f) fixed = JSON.parse(f);
     const h = localStorage.getItem('racha_history');
     if (h) history = JSON.parse(h);
     const ni = localStorage.getItem('racha_names');
@@ -558,7 +550,6 @@ window.addEventListener('load', () => {
 function save() {
   try {
     localStorage.setItem('racha_players', JSON.stringify(players));
-    localStorage.setItem('racha_fixed',   JSON.stringify(fixed));
     localStorage.setItem('racha_history', JSON.stringify(history));
     localStorage.setItem('racha_names',   document.getElementById('namesInput').value);
     localStorage.setItem('racha_config',  JSON.stringify(config));
@@ -598,10 +589,6 @@ function gotoStep2() {
   // Merge: preserve ratings for existing names
   const oldMap = Object.fromEntries(players.map(p => [p.name, p]));
   players = names.map((name, i) => oldMap[name] ? { ...oldMap[name] } : { id: Date.now()+i, name, stars: 3, isGK: false });
-
-  // Remove fixed entries for players no longer present
-  const ids = new Set(players.map(p => p.id));
-  Object.keys(fixed).forEach(k => { if (!ids.has(+k)) delete fixed[+k]; });
 
   save();
   renderList();
@@ -698,48 +685,38 @@ function buildTeams() {
     return true;
   };
 
-  // 1) Place FIXED players
-  const fixedPlayers  = players.filter(p => fixed[p.id] !== undefined);
-  const freePlayers   = players.filter(p => fixed[p.id] === undefined);
+  // 1) Separate GKs (only if option enabled)
+  let gkPool    = opts.gk ? players.filter(p => p.isGK)  : [];
+  let fieldPool = opts.gk ? players.filter(p => !p.isGK) : [...players];
 
-  fixedPlayers.forEach(p => {
-    const ti = fixed[p.id];
-    if (ti >= 0 && ti < n) addToTeam(ti, p, { isFixed: true });
-  });
-
-  // 2) Separate GKs (only if option enabled)
-  let gkPool    = opts.gk ? freePlayers.filter(p => p.isGK)  : [];
-  let fieldPool = opts.gk ? freePlayers.filter(p => !p.isGK) : [...freePlayers];
-
-  // 3) Distribute GKs (one per team, random)
+  // 2) Distribute GKs (one per team, random)
   const shuffledGKs = shuffle(gkPool);
   shuffledGKs.forEach((gk, i) => {
     if (i < n) addToTeam(i, gk, { isGK: true });
     else fieldPool.push(gk); // extra GKs join field
   });
 
-  // 4) Captains (top-starred, one per team)
+  // 3) Captains (top-starred, one per team)
   if (opts.cap) {
     const sorted = [...fieldPool].sort((a,b) => b.stars - a.stars);
     const caps   = sorted.splice(0, n);
     fieldPool    = sorted;
 
     if (sortMode === 'balanced') {
-      // Assign best captain to team with most need (already sorted desc)
       caps.forEach((c, i) => addToTeam(i, c, { isCaptain: true }));
     } else {
-      // Random captain assignment
       shuffle(caps).forEach((c, i) => addToTeam(i, c, { isCaptain: true }));
     }
   }
 
-  // 5) Distribute remaining field players
-  const totalSlots  = slots.reduce((a,b) => a+b, 0);
-  const distribute  = fieldPool.slice(0, totalSlots);
-  const leftover    = fieldPool.slice(totalSlots);
+  // 4) Embaralha TODA a lista ANTES de fatiar — todo jogador tem chance igual de ser sorteado
+  const shuffledPool = shuffle(fieldPool);
+  const totalSlots   = slots.reduce((a,b) => a+b, 0);
+  const distribute   = shuffledPool.slice(0, totalSlots);
+  const leftover     = shuffledPool.slice(totalSlots);
 
   if (sortMode === 'balanced') {
-    // Greedy: assign each player (sorted desc) to team with min stars that still has slots
+    // Greedy: cada jogador (ordenado desc por estrelas) vai pro time com menos pontos
     const sorted = [...distribute].sort((a,b) => b.stars - a.stars);
     sorted.forEach(p => {
       let best = -1, minS = Infinity;
@@ -749,12 +726,11 @@ function buildTeams() {
       if (best >= 0) addToTeam(best, p);
     });
   } else {
-    // Random: snake-fill
-    const shuf = shuffle(distribute);
+    // Random: snake-fill (já embaralhado acima)
     let pi = 0;
     for (let ti = 0; ti < n; ti++) {
-      while (slots[ti] > 0 && pi < shuf.length) {
-        addToTeam(ti, shuf[pi++]);
+      while (slots[ti] > 0 && pi < distribute.length) {
+        addToTeam(ti, distribute[pi++]);
       }
     }
   }
@@ -828,17 +804,13 @@ function renderResults(teams, leftover) {
       </div>
       <div class="team-body">
         ${t.players.map(p => {
-          const isFixed = fixed[p.id] !== undefined;
           let badge = '<div class="p-badge">#</div>';
           if (p.isCaptain) badge = '<div class="p-badge cap" title="Capitão">C</div>';
           else if (p.isGK) badge = '<div class="p-badge gk" title="Goleiro">GK</div>';
-          const stars = '';  // estrelas ocultadas no resultado
           return `
-            <div class="t-player" onclick="toggleFixed(${p.id},${ti})" title="Fixar/desafixar jogador">
+            <div class="t-player">
               ${badge}
               <span class="p-name">${esc(p.name)}</span>
-              ${stars}
-              <span class="p-pin${isFixed?' on':''}">📌</span>
             </div>`;
         }).join('')}
       </div>
@@ -859,29 +831,6 @@ function renderResults(teams, leftover) {
   const sec = document.getElementById('resultSec');
   sec.classList.remove('hidden');
   setTimeout(() => sec.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
-}
-
-/* ── TOGGLE FIXED ─────────────────────────────────────────────────────── */
-function toggleFixed(playerId, teamIdx) {
-  if (fixed[playerId] !== undefined) {
-    delete fixed[playerId];
-    toast('📌 Jogador desafixado');
-  } else {
-    fixed[playerId] = teamIdx;
-    toast('📌 Jogador fixado!');
-  }
-  save();
-  // Refresh pins without full re-sort
-  document.querySelectorAll('.p-pin').forEach(el => {
-    const parent = el.closest('.t-player');
-    if (!parent) return;
-    const onclick = parent.getAttribute('onclick') || '';
-    const match = onclick.match(/toggleFixed\((\d+)/);
-    if (match) {
-      const pid = +match[1];
-      el.classList.toggle('on', fixed[pid] !== undefined);
-    }
-  });
 }
 
 /* ── COPY ─────────────────────────────────────────────────────────────── */

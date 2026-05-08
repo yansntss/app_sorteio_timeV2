@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚽ Alto Valor FC – Sorteador de Times</title>
+  <style>
+    :root {
+      --bg:         #07090a;
+      --surface:    #0e1214;
+      --card:       #141a1d;
+      --card2:      #1a2228;
+      --border:     #243038;
+      --green:      #39e073;
+      --green-dim:  #27a350;
+      --green-glow: rgba(57,224,115,.25);
+      --gold:       #f5c842;
+      --gold-glow:  rgba(245,200,66,.3);
+      --blue:       #5ba4f5;
+      --red:        #f06060;
+      --text:       #d8eae0;
+      --text-dim:   #4d6655;
+      --radius:     14px;
+      --shadow:     0 6px 32px rgba(0,0,0,.6);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 44px 20px 12px;
+    }
+    .logo-ball { font-size: 2.4rem; display: block; margin-bottom: 6px; }
+    header h1 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(2.2rem, 9vw, 4.2rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #39e073 30%, #9fefbb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 24px rgba(57,224,115,.45));
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: .78rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── STEP INDICATOR ─────────────────────── */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 360px;
+      margin: 28px auto 20px;
+      padding: 0 20px;
+    }
+    .step-wrap { display: flex; align-items: center; flex: 1; }
+    .step-wrap:last-child { flex: 0; }
+    .step-c {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .82rem;
+      color: var(--text-dim);
+      background: var(--surface);
+      transition: all .25s;
+      flex-shrink: 0;
+    }
+    .step-c.active { border-color: var(--green); color: var(--green); box-shadow: 0 0 14px var(--green-glow); }
+    .step-c.done   { border-color: var(--green); background: var(--green); color: #000; }
+    .step-l { flex: 1; height: 2px; background: var(--border); transition: background .3s; margin: 0 4px; }
+    .step-l.done { background: var(--green); }
+
+    /* ── CONTAINER ──────────────────────────── */
+    .container { max-width: 680px; margin: 0 auto; padding: 0 14px; }
+
+    /* ── PANEL ──────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+
+    /* ── FORM ───────────────────────────────── */
+    label {
+      display: block;
+      font-size: .72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+    textarea, input[type=number] {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .94rem;
+      padding: 11px 13px;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      resize: vertical;
+    }
+    textarea:focus, input[type=number]:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+    textarea { min-height: 130px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .form-group { display: flex; flex-direction: column; }
+
+    /* ── BUTTONS ────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 7px;
+      padding: 11px 20px;
+      border-radius: 9px; border: none; cursor: pointer;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      letter-spacing: .5px; text-transform: uppercase;
+      transition: all .18s;
+    }
+    .btn-primary {
+      background: var(--green); color: #000;
+      width: 100%; margin-top: 14px;
+      font-size: .95rem; padding: 13px;
+    }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 0 22px var(--green-glow); transform: translateY(-1px); }
+    .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--green); border-color: var(--green); }
+
+    /* ── PLAYER LIST ────────────────────────── */
+    .player-list {
+      display: flex; flex-direction: column; gap: 7px;
+      max-height: 380px; overflow-y: auto; padding-right: 3px;
+    }
+    .player-list::-webkit-scrollbar { width: 4px; }
+    .player-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .player-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 9px; padding: 9px 12px;
+      transition: border-color .15s;
+    }
+    .player-item:hover { border-color: var(--green-dim); }
+    .player-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; color: var(--text-dim); flex-shrink: 0;
+    }
+    .player-name-cell { flex: 1; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stars { display: flex; gap: 2px; }
+    .star {
+      cursor: pointer; font-size: 1.08rem;
+      transition: transform .1s;
+      opacity: .22; user-select: none; line-height: 1;
+    }
+    .star.on { opacity: 1; filter: drop-shadow(0 0 4px var(--gold-glow)); }
+    .star:hover { transform: scale(1.25); }
+    .gk-btn {
+      padding: 3px 8px; border-radius: 6px; font-size: .68rem;
+      font-weight: 700; letter-spacing: 1px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-dim); transition: all .18s; white-space: nowrap;
+      font-family: inherit; text-transform: uppercase;
+    }
+    .gk-btn.on { background: #0e2040; border-color: var(--blue); color: var(--blue); }
+
+    /* ── QUICK STAR BAR ─────────────────────── */
+    .quick-bar {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin: 14px 0 0;
+    }
+    .quick-btn {
+      padding: 5px 10px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text-dim); font-family: inherit; font-size: .75rem;
+      font-weight: 600; cursor: pointer; transition: all .15s;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .quick-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── MODE SELECTOR ──────────────────────── */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .mode-btn {
+      padding: 13px 10px;
+      border-radius: 9px; border: 2px solid var(--border);
+      background: var(--card); color: var(--text-dim);
+      cursor: pointer; font-family: inherit; font-size: .83rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      transition: all .18s; text-align: center;
+    }
+    .mode-btn.on { border-color: var(--green); color: var(--green); background: rgba(57,224,115,.07); }
+
+    /* ── OPTION CHIPS ───────────────────────── */
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text-dim); cursor: pointer;
+      font-size: .76rem; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; user-select: none;
+      transition: all .18s;
+    }
+    .chip.on { border-color: var(--gold); color: var(--gold); background: rgba(245,200,66,.07); }
+
+    /* ── VALIDATION ─────────────────────────── */
+    .vmsg {
+      padding: 9px 13px; border-radius: 8px;
+      font-size: .83rem; margin-bottom: 12px; border: 1px solid;
+    }
+    .vmsg.err  { background: rgba(240,96,96,.09);  border-color: var(--red);   color: var(--red);   }
+    .vmsg.warn { background: rgba(245,200,66,.09); border-color: var(--gold);  color: var(--gold);  }
+    .vmsg.ok   { background: rgba(57,224,115,.07); border-color: var(--green); color: var(--green); }
+
+    /* ── RESULTS ────────────────────────────── */
+    .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+    .team-card {
+      border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      animation: rise .35s ease both;
+    }
+    @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .team-hdr {
+      padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .team-title {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .team-pts {
+      font-size: .76rem; opacity: .85;
+      background: rgba(0,0,0,.3); padding: 3px 9px; border-radius: 12px;
+    }
+    .team-body { background: var(--card); padding: 10px 14px; }
+    .t-player {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+      cursor: pointer; transition: opacity .15s;
+    }
+    .t-player:last-child { border-bottom: none; }
+    .t-player:hover { opacity: .75; }
+    .p-badge {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; flex-shrink: 0;
+    }
+    .p-badge.cap { background: var(--gold); color: #000; font-weight: 900; }
+    .p-badge.gk  { background: #0e2040; color: var(--blue); font-weight: 700; }
+    .p-name  { flex: 1; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .p-stars { font-size: .62rem; color: var(--gold); letter-spacing: 0; }
+    .p-pin   { font-size: .72rem; opacity: .3; transition: opacity .15s; margin-left: 2px; }
+    .p-pin.on{ opacity: 1; color: var(--green); }
+
+    /* ── LEFTOVER ───────────────────────────── */
+    .leftover {
+      background: var(--card); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 13px 16px; margin-top: 12px;
+    }
+    .leftover h3 { font-size: .76rem; text-transform: uppercase; letter-spacing: 1px; color: var(--red); margin-bottom: 7px; }
+    .leftover-name { font-size: .86rem; padding: 2px 0; color: var(--text-dim); }
+
+    /* ── ACTION ROW ─────────────────────────── */
+    .act-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .act-row .btn { flex: 1; min-width: 120px; }
+
+    /* ── SHUFFLE OVERLAY ────────────────────── */
+    .shuf-overlay {
+      position: fixed; inset: 0;
+      background: rgba(7,9,10,.96); z-index: 500;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .shuf-overlay.on { opacity: 1; pointer-events: all; }
+    .shuf-ball { font-size: 3rem; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .shuf-name {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(1.6rem, 7vw, 3.2rem);
+      color: var(--green);
+      text-transform: uppercase; letter-spacing: 2px;
+      filter: drop-shadow(0 0 22px var(--green-glow));
+      min-height: 56px; text-align: center;
+    }
+    .shuf-label { font-size: .72rem; letter-spacing: 4px; text-transform: uppercase; color: var(--text-dim); margin-top: 10px; }
+
+    /* ── MODAL ──────────────────────────────── */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,.82);
+      z-index: 600; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s; padding: 16px;
+    }
+    .modal-bg.on { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      max-width: 480px; width: 100%; max-height: 72vh; overflow-y: auto;
+    }
+    .modal h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      color: var(--green); letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 14px; font-size: 1.1rem;
+    }
+    .hist-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 13px; margin-bottom: 7px;
+      cursor: default; transition: border-color .15s;
+    }
+    .hist-item:hover { border-color: var(--green-dim); }
+    .hist-date { font-size: .72rem; color: var(--text-dim); margin-bottom: 3px; }
+    .hist-sum  { font-size: .84rem; }
+
+    /* ── TOAST ──────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 22px;
+      font-size: .88rem; z-index: 700;
+      transition: transform .28s ease; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .toast.on { transform: translateX(-50%) translateY(0); }
+
+    /* ── UTILS ──────────────────────────────── */
+    .hidden { display: none !important; }
+    .mt8  { margin-top: 8px; }
+    .mt14 { margin-top: 14px; }
+    .tip { font-size: .72rem; color: var(--text-dim); text-align: center; margin-top: 8px; }
+
+    @media (max-width: 460px) {
+      .form-row { grid-template-columns: 1fr; }
+      .teams-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header>
+  <span class="logo-ball">⚽</span>
+  <h1>Alto Valor FC</h1>
+  <p>Sorteador de Times</p>
+</header>
+
+<!-- ══════════════════════════ STEP INDICATOR ════════════════════════════ -->
+<div class="steps">
+  <div class="step-wrap">
+    <div class="step-c active" id="sc1">1</div>
+    <div class="step-l" id="sl1"></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-c" id="sc2">2</div>
+    <div class="step-l" id="sl2"></div>
+  </div>
+  <div class="step-wrap">
+    <div class="step-c" id="sc3">3</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN CONTAINER ═══════════════════════════ -->
+<div class="container">
+
+  <!-- ── STEP 1: CONFIGURAR ───────────────────────────────────────────── -->
+  <div id="step1">
+    <div class="panel">
+      <h2>📋 Jogadores &amp; Configuração</h2>
+      <label for="namesInput">Cole os nomes (um por linha)</label>
+      <textarea id="namesInput"
+        placeholder="João&#10;Pedro&#10;Carlos&#10;Lucas&#10;Marcos&#10;..."></textarea>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numTeams">Nº de times</label>
+          <input type="number" id="numTeams" value="2" min="2" max="10">
+        </div>
+        <div class="form-group">
+          <label for="ppTeam">Jogadores por time</label>
+          <input type="number" id="ppTeam" value="5" min="1" max="20">
+        </div>
+      </div>
+
+      <div id="v1"></div>
+      <button class="btn btn-primary" onclick="gotoStep2()">Próximo — Classificar Jogadores →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: CLASSIFICAR ──────────────────────────────────────────── -->
+  <div id="step2" class="hidden">
+    <div class="panel">
+      <h2>⭐ Classificar Jogadores</h2>
+      <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:13px;">
+        Defina as estrelas de cada jogador (1=muito ruim · 5=craque). Marque <b>GK</b> para goleiros.
+      </p>
+
+      <div class="player-list" id="playerList"></div>
+
+      <div class="quick-bar">
+        <span style="font-size:.72rem;color:var(--text-dim);align-self:center;text-transform:uppercase;letter-spacing:1px;">Todos: </span>
+        <button class="quick-btn" onclick="setAll(1)">★ 1</button>
+        <button class="quick-btn" onclick="setAll(2)">★ 2</button>
+        <button class="quick-btn" onclick="setAll(3)">★ 3</button>
+        <button class="quick-btn" onclick="setAll(4)">★ 4</button>
+        <button class="quick-btn" onclick="setAll(5)">★ 5</button>
+        <button class="quick-btn" onclick="clearGKs()">Limpar GKs</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="flex:1" onclick="gotoStep1()">← Voltar</button>
+        <button class="btn btn-primary" style="flex:2;margin-top:0" onclick="gotoStep3()">Próximo — Sortear →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: SORTEAR ──────────────────────────────────────────────── -->
+  <div id="step3" class="hidden">
+
+    <div class="panel">
+      <h2>🎲 Opções de Sorteio</h2>
+
+      <div class="mode-grid">
+        <button class="mode-btn on" id="mRand" onclick="setMode('random')">🎲 Aleatório</button>
+        <button class="mode-btn"    id="mBal"  onclick="setMode('balanced')">⚖️ Balanceado</button>
+      </div>
+
+      <div class="chips">
+        <div class="chip" id="chCap" onclick="toggleChip('cap')">👑 Capitães</div>
+        <div class="chip" id="chGK"  onclick="toggleChip('gk')">🧤 1 Goleiro/time</div>
+      </div>
+
+      <div id="v3"></div>
+      <button class="btn btn-primary" id="btnSort" onclick="sortear()">⚽ SORTEAR AGORA</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="gotoStep2()">← Voltar</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultSec" class="hidden">
+      <div class="panel">
+        <h2>🏆 Times Sorteados</h2>
+        <div id="teamsGrid" class="teams-grid"></div>
+        <div id="leftoverSec"></div>
+        <div class="act-row">
+          <button class="btn btn-secondary" onclick="sortear()">🔄 Ressortear</button>
+          <button class="btn btn-secondary" onclick="copyResult()">📋 Copiar</button>
+          <button class="btn btn-ghost"     onclick="showHist()">🕘 Histórico</button>
+        </div>
+        <p class="tip">Clique em um jogador para 📌 fixá-lo — ao ressortear ele fica no mesmo time</p>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════ SHUFFLE OVERLAY ═══════════════════════════ -->
+<div class="shuf-overlay" id="shufOverlay">
+  <div class="shuf-ball">⚽</div>
+  <div class="shuf-name" id="shufName">—</div>
+  <div class="shuf-label">Sorteando...</div>
+</div>
+
+<!-- ══════════════════════════ HISTORY MODAL ═════════════════════════════ -->
+<div class="modal-bg" id="histModal" onclick="closeHistClick(event)">
+  <div class="modal">
+    <h2>🕘 Últimos Sorteios</h2>
+    <div id="histList"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeHist()">Fechar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TOAST ════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ═══════════════════════════════ SCRIPT ═══════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── CONSTANTS ────────────────────────────────────────────────────────── */
+const PALETTES = [
+  { bg:'#0d2218', accent:'#39e073', name:'Time 1'  },
+  { bg:'#0c1a36', accent:'#5ba4f5', name:'Time 2'  },
+  { bg:'#2e0e0e', accent:'#f06060', name:'Time 3'  },
+  { bg:'#2e1a08', accent:'#fb923c', name:'Time 4'  },
+  { bg:'#1e0d36', accent:'#c084fc', name:'Time 5'  },
+  { bg:'#0a2630', accent:'#22d3ee', name:'Time 6'  },
+  { bg:'#2a2600', accent:'#f5c842', name:'Time 7'  },
+  { bg:'#1a2a00', accent:'#a3e635', name:'Time 8'  },
+  { bg:'#2e0c1e', accent:'#f472b6', name:'Time 9'  },
+  { bg:'#1e1e1e', accent:'#94a3b8', name:'Time 10' },
+];
+
+/* ── STATE ────────────────────────────────────────────────────────────── */
+let players     = [];   // { id, name, stars, isGK }
+let config      = { numTeams: 2, ppTeam: 5 };
+let sortMode    = 'random';   // 'random' | 'balanced'
+let opts        = { cap: false, gk: false };
+let currentTeams = [];
+let fixed       = {};   // playerId → teamIdx
+let history     = [];
+
+/* ── BOOT ─────────────────────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  try {
+    const p = localStorage.getItem('racha_players');
+    if (p) players = JSON.parse(p);
+    const f = localStorage.getItem('racha_fixed');
+    if (f) fixed = JSON.parse(f);
+    const h = localStorage.getItem('racha_history');
+    if (h) history = JSON.parse(h);
+    const ni = localStorage.getItem('racha_names');
+    if (ni) document.getElementById('namesInput').value = ni;
+    const cf = localStorage.getItem('racha_config');
+    if (cf) {
+      const c = JSON.parse(cf);
+      document.getElementById('numTeams').value = c.numTeams ?? 2;
+      document.getElementById('ppTeam').value   = c.ppTeam   ?? 5;
+    }
+  } catch(e) {/* ignore */}
+});
+
+function save() {
+  try {
+    localStorage.setItem('racha_players', JSON.stringify(players));
+    localStorage.setItem('racha_fixed',   JSON.stringify(fixed));
+    localStorage.setItem('racha_history', JSON.stringify(history));
+    localStorage.setItem('racha_names',   document.getElementById('namesInput').value);
+    localStorage.setItem('racha_config',  JSON.stringify(config));
+  } catch(e) {/* ignore */}
+}
+
+/* ── STEP NAVIGATION ──────────────────────────────────────────────────── */
+function setStep(n) {
+  ['step1','step2','step3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('hidden', i+1 !== n);
+  });
+  [1,2,3].forEach(i => {
+    const c = document.getElementById(`sc${i}`);
+    c.classList.remove('active','done');
+    if (i < n)  { c.classList.add('done');   c.textContent = '✓'; }
+    else if (i === n) { c.classList.add('active'); c.textContent = i; }
+    else c.textContent = i;
+  });
+  [1,2].forEach(i => {
+    document.getElementById(`sl${i}`).classList.toggle('done', i < n);
+  });
+}
+
+function gotoStep1() { setStep(1); }
+
+function gotoStep2() {
+  const raw = document.getElementById('namesInput').value.trim();
+  const names = raw.split('\n').map(n => n.trim()).filter(Boolean);
+  config.numTeams = Math.max(2, parseInt(document.getElementById('numTeams').value) || 2);
+  config.ppTeam   = Math.max(1, parseInt(document.getElementById('ppTeam').value)   || 5);
+
+  const v = document.getElementById('v1');
+  if (!names.length)                      { v.innerHTML = msg('err','⚠️ Cole pelo menos um nome na lista.'); return; }
+  if (names.length < config.numTeams)     { v.innerHTML = msg('err',`⚠️ Você precisa de pelo menos ${config.numTeams} jogadores (1 por time).`); return; }
+  v.innerHTML = '';
+
+  // Merge: preserve ratings for existing names
+  const oldMap = Object.fromEntries(players.map(p => [p.name, p]));
+  players = names.map((name, i) => oldMap[name] ? { ...oldMap[name] } : { id: Date.now()+i, name, stars: 3, isGK: false });
+
+  // Remove fixed entries for players no longer present
+  const ids = new Set(players.map(p => p.id));
+  Object.keys(fixed).forEach(k => { if (!ids.has(+k)) delete fixed[+k]; });
+
+  save();
+  renderList();
+  setStep(2);
+}
+
+function gotoStep3() {
+  save();
+  setStep(3);
+  document.getElementById('resultSec').classList.add('hidden');
+}
+
+/* ── PLAYER LIST ──────────────────────────────────────────────────────── */
+function renderList() {
+  document.getElementById('playerList').innerHTML =
+    players.map((p, i) => `
+      <div class="player-item">
+        <div class="player-num">${i+1}</div>
+        <div class="player-name-cell">${esc(p.name)}</div>
+        <div class="stars" id="st_${p.id}">
+          ${[1,2,3,4,5].map(s =>
+            `<span class="star${p.stars>=s?' on':''}" onclick="setStar(${p.id},${s})">★</span>`
+          ).join('')}
+        </div>
+        <button class="gk-btn${p.isGK?' on':''}" id="gkb_${p.id}" onclick="toggleGK(${p.id})">GK</button>
+      </div>
+    `).join('');
+}
+
+function setStar(id, s) {
+  const p = players.find(x => x.id === id);
+  if (!p) return;
+  p.stars = (p.stars === s && s > 1) ? s - 1 : s;
+  const el = document.getElementById(`st_${id}`);
+  if (el) el.innerHTML = [1,2,3,4,5].map(x =>
+    `<span class="star${p.stars>=x?' on':''}" onclick="setStar(${id},${x})">★</span>`
+  ).join('');
+  save();
+}
+
+function toggleGK(id) {
+  const p = players.find(x => x.id === id);
+  if (!p) return;
+  p.isGK = !p.isGK;
+  const b = document.getElementById(`gkb_${id}`);
+  if (b) b.classList.toggle('on', p.isGK);
+  save();
+}
+
+function setAll(n)   { players.forEach(p => p.stars = n); renderList(); save(); }
+function clearGKs()  { players.forEach(p => p.isGK  = false); renderList(); save(); }
+
+/* ── MODE & OPTIONS ───────────────────────────────────────────────────── */
+function setMode(m) {
+  sortMode = m;
+  document.getElementById('mRand').classList.toggle('on', m === 'random');
+  document.getElementById('mBal' ).classList.toggle('on', m === 'balanced');
+}
+
+function toggleChip(k) {
+  opts[k] = !opts[k];
+  document.getElementById(`ch${k.charAt(0).toUpperCase()+k.slice(1)}`).classList.toggle('on', opts[k]);
+}
+
+/* ── SORT ALGORITHM ───────────────────────────────────────────────────── */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = 0|Math.random()*(i+1);
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildTeams() {
+  const n = config.numTeams;
+
+  // Init team objects
+  const teams = Array.from({length: n}, (_,i) => ({
+    ...PALETTES[i % PALETTES.length],
+    name: PALETTES[i % PALETTES.length].name,
+    players: [],
+    totalStars: 0,
+  }));
+
+  // Slot budget per team (mutable)
+  const slots = Array(n).fill(config.ppTeam);
+
+  const addToTeam = (ti, player, extra = {}) => {
+    if (slots[ti] <= 0) return false;
+    teams[ti].players.push({ ...player, ...extra });
+    teams[ti].totalStars += player.stars;
+    slots[ti]--;
+    return true;
+  };
+
+  // 1) Place FIXED players
+  const fixedPlayers  = players.filter(p => fixed[p.id] !== undefined);
+  const freePlayers   = players.filter(p => fixed[p.id] === undefined);
+
+  fixedPlayers.forEach(p => {
+    const ti = fixed[p.id];
+    if (ti >= 0 && ti < n) addToTeam(ti, p, { isFixed: true });
+  });
+
+  // 2) Separate GKs (only if option enabled)
+  let gkPool    = opts.gk ? freePlayers.filter(p => p.isGK)  : [];
+  let fieldPool = opts.gk ? freePlayers.filter(p => !p.isGK) : [...freePlayers];
+
+  // 3) Distribute GKs (one per team, random)
+  const shuffledGKs = shuffle(gkPool);
+  shuffledGKs.forEach((gk, i) => {
+    if (i < n) addToTeam(i, gk, { isGK: true });
+    else fieldPool.push(gk); // extra GKs join field
+  });
+
+  // 4) Captains (top-starred, one per team)
+  if (opts.cap) {
+    const sorted = [...fieldPool].sort((a,b) => b.stars - a.stars);
+    const caps   = sorted.splice(0, n);
+    fieldPool    = sorted;
+
+    if (sortMode === 'balanced') {
+      // Assign best captain to team with most need (already sorted desc)
+      caps.forEach((c, i) => addToTeam(i, c, { isCaptain: true }));
+    } else {
+      // Random captain assignment
+      shuffle(caps).forEach((c, i) => addToTeam(i, c, { isCaptain: true }));
+    }
+  }
+
+  // 5) Distribute remaining field players
+  const totalSlots  = slots.reduce((a,b) => a+b, 0);
+  const distribute  = fieldPool.slice(0, totalSlots);
+  const leftover    = fieldPool.slice(totalSlots);
+
+  if (sortMode === 'balanced') {
+    // Greedy: assign each player (sorted desc) to team with min stars that still has slots
+    const sorted = [...distribute].sort((a,b) => b.stars - a.stars);
+    sorted.forEach(p => {
+      let best = -1, minS = Infinity;
+      for (let i = 0; i < n; i++) {
+        if (slots[i] > 0 && teams[i].totalStars < minS) { minS = teams[i].totalStars; best = i; }
+      }
+      if (best >= 0) addToTeam(best, p);
+    });
+  } else {
+    // Random: snake-fill
+    const shuf = shuffle(distribute);
+    let pi = 0;
+    for (let ti = 0; ti < n; ti++) {
+      while (slots[ti] > 0 && pi < shuf.length) {
+        addToTeam(ti, shuf[pi++]);
+      }
+    }
+  }
+
+  return { teams, leftover };
+}
+
+/* ── SORTEAR ──────────────────────────────────────────────────────────── */
+async function sortear() {
+  const v = document.getElementById('v3');
+  v.innerHTML = '';
+
+  // Validate GK option
+  if (opts.gk) {
+    const gkCount = players.filter(p => p.isGK).length;
+    if (gkCount < config.numTeams) {
+      v.innerHTML = msg('warn', `⚠️ Opção "1 Goleiro/time" ativa mas só há ${gkCount} GK(s) para ${config.numTeams} times. Desative ou marque mais GKs.`);
+      return;
+    }
+  }
+
+  const btn = document.getElementById('btnSort');
+  btn.disabled = true;
+
+  await animShuffle();
+
+  const { teams, leftover } = buildTeams();
+  currentTeams = teams;
+
+  renderResults(teams, leftover);
+
+  // Save to history
+  history.unshift({
+    date: new Date().toLocaleString('pt-BR'),
+    mode: sortMode === 'balanced' ? 'Balanceado' : 'Aleatório',
+    teams: teams.map(t => ({ name: t.name, players: t.players.map(p => p.name) })),
+  });
+  if (history.length > 5) history.pop();
+  save();
+
+  btn.disabled = false;
+}
+
+function animShuffle() {
+  return new Promise(res => {
+    const ov  = document.getElementById('shufOverlay');
+    const nm  = document.getElementById('shufName');
+    const all = players.map(p => p.name);
+    ov.classList.add('on');
+    let c = 0;
+    const iv = setInterval(() => {
+      nm.textContent = all[0|Math.random()*all.length];
+      if (++c >= 20) {
+        clearInterval(iv);
+        ov.classList.remove('on');
+        res();
+      }
+    }, 75);
+  });
+}
+
+/* ── RENDER RESULTS ───────────────────────────────────────────────────── */
+function renderResults(teams, leftover) {
+  const grid = document.getElementById('teamsGrid');
+
+  grid.innerHTML = teams.map((t, ti) => `
+    <div class="team-card" style="animation-delay:${ti*.07}s">
+      <div class="team-hdr" style="background:${t.bg};border-bottom:2px solid ${t.accent}">
+        <span class="team-title" style="color:${t.accent}">${esc(t.name)}</span>
+        <span class="team-pts">⭐ ${t.totalStars} pts</span>
+      </div>
+      <div class="team-body">
+        ${t.players.map(p => {
+          const isFixed = fixed[p.id] !== undefined;
+          let badge = '<div class="p-badge">#</div>';
+          if (p.isCaptain) badge = '<div class="p-badge cap" title="Capitão">C</div>';
+          else if (p.isGK) badge = '<div class="p-badge gk" title="Goleiro">GK</div>';
+          const stars = '';  // estrelas ocultadas no resultado
+          return `
+            <div class="t-player" onclick="toggleFixed(${p.id},${ti})" title="Fixar/desafixar jogador">
+              ${badge}
+              <span class="p-name">${esc(p.name)}</span>
+              ${stars}
+              <span class="p-pin${isFixed?' on':''}">📌</span>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const lo = document.getElementById('leftoverSec');
+  if (leftover.length) {
+    lo.innerHTML = `
+      <div class="leftover">
+        <h3>⚠️ Ficaram de fora (${leftover.length})</h3>
+        ${leftover.map(p => `<div class="leftover-name">• ${esc(p.name)}</div>`).join('')}
+      </div>`;
+  } else {
+    lo.innerHTML = '';
+  }
+
+  const sec = document.getElementById('resultSec');
+  sec.classList.remove('hidden');
+  setTimeout(() => sec.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
+}
+
+/* ── TOGGLE FIXED ─────────────────────────────────────────────────────── */
+function toggleFixed(playerId, teamIdx) {
+  if (fixed[playerId] !== undefined) {
+    delete fixed[playerId];
+    toast('📌 Jogador desafixado');
+  } else {
+    fixed[playerId] = teamIdx;
+    toast('📌 Jogador fixado!');
+  }
+  save();
+  // Refresh pins without full re-sort
+  document.querySelectorAll('.p-pin').forEach(el => {
+    const parent = el.closest('.t-player');
+    if (!parent) return;
+    const onclick = parent.getAttribute('onclick') || '';
+    const match = onclick.match(/toggleFixed\((\d+)/);
+    if (match) {
+      const pid = +match[1];
+      el.classList.toggle('on', fixed[pid] !== undefined);
+    }
+  });
+}
+
+/* ── COPY ─────────────────────────────────────────────────────────────── */
+function copyResult() {
+  if (!currentTeams.length) return;
+  const txt = currentTeams.map(t => {
+    const lines = t.players.map(p => {
+      const pre = p.isCaptain ? '👑 ' : p.isGK ? '🧤 ' : '   ';
+      return `${pre}${p.name}`;
+    }).join('\n');
+    return `${t.name}\n${lines}`;
+  }).join('\n\n');
+  navigator.clipboard.writeText(`⚽ Alto Valor FC\n${'─'.repeat(22)}\n${txt}`)
+    .then(() => toast('✅ Copiado! Cole no WhatsApp.'))
+    .catch(() => toast('❌ Não foi possível copiar'));
+}
+
+/* ── HISTORY ──────────────────────────────────────────────────────────── */
+function showHist() {
+  const list = document.getElementById('histList');
+  if (!history.length) {
+    list.innerHTML = '<p style="color:var(--text-dim);font-size:.85rem">Nenhum sorteio ainda.</p>';
+  } else {
+    list.innerHTML = history.map(h => `
+      <div class="hist-item">
+        <div class="hist-date">📅 ${h.date} · ${h.mode}</div>
+        <div class="hist-sum">
+          ${h.teams.map(t =>
+            `<b>${esc(t.name)}:</b> ${t.players.slice(0,3).map(esc).join(', ')}${t.players.length>3?'…':''}`
+          ).join(' &nbsp;|&nbsp; ')}
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('histModal').classList.add('on');
+}
+function closeHistClick(e) { if (e.target.id==='histModal') closeHist(); }
+function closeHist() { document.getElementById('histModal').classList.remove('on'); }
+
+/* ── TOAST ────────────────────────────────────────────────────────────── */
+let _tt;
+function toast(m) {
+  const el = document.getElementById('toast');
+  el.textContent = m;
+  el.classList.add('on');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+/* ── UTILS ────────────────────────────────────────────────────────────── */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function msg(type, text) {
+  return `<div class="vmsg ${type}">${text}</div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+{
+  "info": {
+    "name": "Alto Valor FC - Sorteador",
+    "description": "API de votacao pos-baba. Endpoints rodam em Cloudflare Pages Functions com D1 (SQLite).\n\nFluxo:\n1. POST /api/sessions -> cria sessao com jogadores, retorna id\n2. GET /api/sessions/:id -> retorna jogadores pro form\n3. POST /api/votes -> registra votos da sessao\n4. GET /api/results/:id -> ranking agregado\n\nA primeira requisicao salva o sessionId automaticamente como variavel da collection, entao as proximas funcionam em cadeia.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "alto-valor-fc-collection"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8788",
+      "type": "string",
+      "description": "URL base. Local: http://127.0.0.1:8788  |  Prod: https://SEU-APP.pages.dev"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string",
+      "description": "Preenchido automaticamente pelo POST /api/sessions"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "POST criar sessao",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('retorna id', () => pm.expect(body.id).to.be.a('string').and.have.lengthOf(8));",
+                  "pm.test('retorna players', () => pm.expect(body.players).to.be.an('array').that.is.not.empty);",
+                  "pm.collectionVariables.set('sessionId', body.id);",
+                  "console.log('sessionId salvo:', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"players\": [\n    { \"id\": \"1\", \"name\": \"Yan\" },\n    { \"id\": \"2\", \"name\": \"Vini\" },\n    { \"id\": \"3\", \"name\": \"Ze\" },\n    { \"id\": \"4\", \"name\": \"Bruno\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions"]
+            },
+            "description": "Cria uma nova sessao de votacao com os jogadores do baba. Retorna { id, createdAt, players }."
+          }
+        },
+        {
+          "name": "GET sessao por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('id confere', () => pm.expect(body.id).to.eql(pm.collectionVariables.get('sessionId')));",
+                  "pm.test('tem players', () => pm.expect(body.players).to.be.an('array').that.is.not.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions", "{{sessionId}}"]
+            },
+            "description": "Retorna os jogadores de uma sessao. Usado pela tela de votacao."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Votes",
+      "item": [
+        {
+          "name": "POST registrar votos (round 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('ok=true', () => pm.expect(body.ok).to.eql(true));",
+                  "pm.test('inserted=4', () => pm.expect(body.inserted).to.eql(4));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"votes\": [\n    { \"playerId\": \"1\", \"score\": 5 },\n    { \"playerId\": \"2\", \"score\": 3 },\n    { \"playerId\": \"3\", \"score\": 4 },\n    { \"playerId\": \"4\", \"score\": 2 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/votes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "votes"]
+            },
+            "description": "Registra um conjunto de votos para a sessao. Cada voto: { playerId, score (1-5) }."
+          }
+        },
+        {
+          "name": "POST registrar votos (round 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"votes\": [\n    { \"playerId\": \"1\", \"score\": 4 },\n    { \"playerId\": \"2\", \"score\": 5 },\n    { \"playerId\": \"3\", \"score\": 3 },\n    { \"playerId\": \"4\", \"score\": 4 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/votes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "votes"]
+            },
+            "description": "Segunda rodada de votos pra simular ranking com mais de um votante."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "GET ranking da sessao",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('ranking ordenado por avg desc', () => {",
+                  "  for (let i = 1; i < body.ranking.length; i++) {",
+                  "    pm.expect(body.ranking[i-1].avg).to.be.at.least(body.ranking[i].avg);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/results/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "results", "{{sessionId}}"]
+            },
+            "description": "Retorna ranking agregado: { sessionId, createdAt, ranking: [{ id, name, avg, total }] } ordenado por avg desc."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validacao (erros esperados)",
+      "item": [
+        {
+          "name": "POST sessions sem players (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('tem error', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "POST sessions com ids duplicados (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"players\": [\n    { \"id\": \"1\", \"name\": \"Yan\" },\n    { \"id\": \"1\", \"name\": \"Vini\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "GET sessao inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/NAOEXISTE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions", "NAOEXISTE"]
+            }
+          }
+        },
+        {
+          "name": "POST votes score=7 (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('mensagem fala de score', () => pm.expect(pm.response.json().error).to.match(/score/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"votes\": [{ \"playerId\": \"1\", \"score\": 7 }]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/votes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "votes"]
+            }
+          }
+        },
+        {
+          "name": "POST votes player inexistente (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"votes\": [{ \"playerId\": \"999\", \"score\": 3 }]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/votes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "votes"]
+            }
+          }
+        },
+        {
+          "name": "POST votes sessao inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"NAOEXISTE\",\n  \"votes\": [{ \"playerId\": \"1\", \"score\": 3 }]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/votes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "votes"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

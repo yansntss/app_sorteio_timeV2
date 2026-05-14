@@ -1,0 +1,8 @@
+name = "alto-valor-fc"
+compatibility_date = "2025-05-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "racha"
+database_id = "b0b5822f-c45b-4668-aa87-b07a2e6278c7"

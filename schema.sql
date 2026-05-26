@@ -15,3 +15,11 @@ CREATE TABLE IF NOT EXISTS votes (
 
 CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
 CREATE INDEX IF NOT EXISTS idx_votes_session_player ON votes(session_id, player_id);
+
+CREATE TABLE IF NOT EXISTS vote_submissions (
+  session_id   TEXT    NOT NULL,
+  voter_token  TEXT    NOT NULL,
+  created_at   INTEGER NOT NULL,
+  PRIMARY KEY (session_id, voter_token),
+  FOREIGN KEY (session_id) REFERENCES sessions(id)
+);

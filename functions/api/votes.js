@@ -3,11 +3,14 @@ import { json, error, readJson } from "../_utils.js";
 export async function onRequestPost({ request, env }) {
   const body = await readJson(request);
   if (!body || typeof body.sessionId !== "string" || !Array.isArray(body.votes)) {
-    return error("payload invalido: esperado { sessionId, votes: [...] }");
+    return error("payload invalido: esperado { sessionId, voterToken, votes: [...] }");
   }
 
   const sessionId = body.sessionId.trim();
   if (!sessionId) return error("sessionId obrigatorio");
+
+  const voterToken = typeof body.voterToken === "string" ? body.voterToken.trim() : "";
+  if (!voterToken) return error("voterToken obrigatorio");
 
   const session = await env.DB.prepare(
     "SELECT players FROM sessions WHERE id = ?"
@@ -16,6 +19,14 @@ export async function onRequestPost({ request, env }) {
     .first();
 
   if (!session) return error("sessao nao encontrada", 404);
+
+  const existing = await env.DB.prepare(
+    "SELECT 1 FROM vote_submissions WHERE session_id = ? AND voter_token = ?"
+  )
+    .bind(sessionId, voterToken)
+    .first();
+
+  if (existing) return error("voto ja registrado para este token", 409);
 
   const validIds = new Set(JSON.parse(session.players).map((p) => p.id));
 
@@ -33,12 +44,17 @@ export async function onRequestPost({ request, env }) {
   if (votes.length === 0) return error("nenhum voto enviado");
 
   const createdAt = Date.now();
-  const stmt = env.DB.prepare(
+  const submissionStmt = env.DB.prepare(
+    "INSERT INTO vote_submissions (session_id, voter_token, created_at) VALUES (?, ?, ?)"
+  );
+  const voteStmt = env.DB.prepare(
     "INSERT INTO votes (session_id, player_id, score, created_at) VALUES (?, ?, ?, ?)"
   );
-  await env.DB.batch(
-    votes.map((v) => stmt.bind(sessionId, v.playerId, v.score, createdAt))
-  );
+
+  await env.DB.batch([
+    submissionStmt.bind(sessionId, voterToken, createdAt),
+    ...votes.map((v) => voteStmt.bind(sessionId, v.playerId, v.score, createdAt)),
+  ]);
 
   return json({ ok: true, inserted: votes.length }, 201);
 }

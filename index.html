@@ -924,9 +924,10 @@ function renderVoteShare(session) {
     <div class="vote-link" id="voteUrl">${esc(url)}</div>
     <div class="act-row" style="margin-top:0">
       <button class="btn btn-primary" onclick="copyVoteLink()">📋 Copiar link</button>
-      <button class="btn btn-secondary" onclick="window.open('${esc(url)}','_blank')">🔗 Abrir</button>
+      <button class="btn btn-secondary" id="btnOpenVote">🔗 Abrir</button>
     </div>
     <p class="tip" style="margin-top:10px">Sessão: <b>${esc(session.id)}</b> · ${session.players.length} jogadores</p>`;
+  document.getElementById('btnOpenVote').onclick = () => window.open(url, '_blank');
 }
 
 function copyVoteLink() {

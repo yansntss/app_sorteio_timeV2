@@ -53,6 +53,36 @@
       margin-top: 4px;
     }
 
+    /* ── USER BAR ──────────────────────────────────────────────────────── */
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 520px;
+      margin: 0 auto 8px;
+      padding: 0 16px;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .user-bar.hidden { display: none !important; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+      background: var(--card2);
+    }
+    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-bar a {
+      color: var(--text-dim);
+      font-size: .72rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+    .user-bar a:hover { color: var(--red); border-color: var(--red); }
+
     .container { max-width: 520px; margin: 0 auto; padding: 0 16px; }
 
     .panel {
@@ -179,6 +209,13 @@
   <p>Votação Pós-Baba</p>
 </header>
 
+<!-- USER BAR (hidden until auth resolves) -->
+<div class="user-bar hidden" id="userBar">
+  <img class="user-avatar" id="userAvatar" src="" alt="">
+  <span class="user-name" id="userName"></span>
+  <a href="/api/auth/logout">Sair</a>
+</div>
+
 <div class="container">
   <div id="root">
     <div class="panel"><div class="loading">⏳ carregando...</div></div>
@@ -191,23 +228,10 @@
 'use strict';
 
 const sid = new URLSearchParams(location.search).get('s');
-const STORAGE_KEY  = sid ? `avfc_voted_${sid}` : null;
-const TOKEN_KEY    = sid ? `avfc_token_${sid}` : null;
 
-let session = null;       // { id, players: [{id, name}] }
-let scores  = {};         // { playerId: 1..5 }
-
-function getVoterToken() {
-  let t = localStorage.getItem(TOKEN_KEY);
-  if (!t) {
-    t = crypto.randomUUID
-      ? crypto.randomUUID()
-      : Array.from(crypto.getRandomValues(new Uint8Array(16)))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
-    localStorage.setItem(TOKEN_KEY, t);
-  }
-  return t;
-}
+let session     = null;   // { id, players: [{id, name}] }
+let scores      = {};     // { playerId: 1..5 }
+let currentUser = null;   // { id, email, name, picture }
 
 function esc(s) {
   return String(s)
@@ -229,22 +253,46 @@ function setRoot(html) {
 }
 
 async function api(path, opts) {
-  const res = await fetch(path, opts);
+  const res  = await fetch(path, opts);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || `HTTP ${res.status}`);
-    err.status = res.status;
-    throw err;
-  }
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
 }
 
+function renderUserBar(user) {
+  const bar    = document.getElementById('userBar');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  if (user && user.name) {
+    avatar.src = user.picture || '';
+    avatar.style.display = user.picture ? '' : 'none';
+    name.textContent = user.name;
+    bar.classList.remove('hidden');
+  }
+}
+
 async function boot() {
+  // 1. Check auth
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    currentUser = data.user;
+  } catch { /* silent */ }
+
+  if (!currentUser) {
+    location.href = '/api/auth/login?redirect=' + encodeURIComponent(location.href);
+    return;
+  }
+
+  renderUserBar(currentUser);
+
+  // 2. Validate sid
   if (!sid) {
     setRoot(`<div class="panel"><div class="vmsg err">❌ Link inválido. Está faltando o parâmetro <code>?s=</code>.</div></div>`);
     return;
   }
 
+  // 3. Load session
   try {
     session = await api(`/api/sessions/${encodeURIComponent(sid)}`);
   } catch (e) {
@@ -252,18 +300,14 @@ async function boot() {
     return;
   }
 
-  if (localStorage.getItem(STORAGE_KEY)) {
-    await showResults('Você já votou nesta sessão.');
-  } else {
-    renderForm();
-  }
+  renderForm();
 }
 
 function renderForm() {
   const rows = session.players.map(p => `
     <div class="vote-row" data-player="${esc(p.id)}">
       <div class="vote-name">${esc(p.name)}</div>
-      <div class="stars" id="st_${esc(p.id)}">
+      <div class="stars" id="st_${p.id}">
         ${[1,2,3,4,5].map(s => `<span class="star" data-s="${s}" onclick="setStar('${esc(p.id)}',${s})">★</span>`).join('')}
       </div>
     </div>`).join('');
@@ -286,7 +330,7 @@ function setStar(playerId, s) {
       el.classList.toggle('on', Number(el.dataset.s) <= s);
     });
   }
-  const done = Object.keys(scores).length;
+  const done  = Object.keys(scores).length;
   const total = session.players.length;
   document.getElementById('progress').innerHTML = `<b>${done}</b> / ${total} avaliados`;
   document.getElementById('btnSubmit').disabled = done < total;
@@ -303,18 +347,17 @@ async function submitVotes() {
     await api('/api/votes', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ sessionId: session.id, voterToken: getVoterToken(), votes }),
+      body: JSON.stringify({ sessionId: session.id, votes }),
     });
-    localStorage.setItem(STORAGE_KEY, String(Date.now()));
     toast('✅ Voto registrado!');
     await showResults('Obrigado! Seu voto foi registrado.');
   } catch (e) {
-    if (e.status === 409) {
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+    btn.disabled = false;
+    btn.textContent = 'Enviar votos';
+    if (e.message && e.message.toLowerCase().includes('ja votou')) {
+      toast('⚠️ Você já votou nesta sessão.');
       await showResults('Você já votou nesta sessão.');
     } else {
-      btn.disabled = false;
-      btn.textContent = 'Enviar votos';
       toast('❌ ' + e.message);
     }
   }
@@ -332,7 +375,7 @@ async function showResults(headline) {
 
 function renderRanking(ranking, headline) {
   const items = ranking.map((p, i) => {
-    const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const cls   = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
     return `
       <div class="rank-item ${cls}">

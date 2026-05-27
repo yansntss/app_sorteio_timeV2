@@ -1,35 +1,18 @@
--- Full schema for new deployments (includes all migrations)
--- Run with: wrangler d1 execute racha --file=schema.sql --remote
+-- Migration 001: Google OAuth + user accounts + player profiles
+-- Run against existing D1 database with: wrangler d1 execute racha --file=migrations/001_auth.sql --remote
 
-CREATE TABLE IF NOT EXISTS sessions (
-  id                TEXT PRIMARY KEY,
-  created_at        INTEGER NOT NULL,
-  players           TEXT NOT NULL,
-  owner_id          TEXT,
-  rating_applied_at INTEGER
-);
+ALTER TABLE sessions ADD COLUMN owner_id TEXT;
+ALTER TABLE sessions ADD COLUMN rating_applied_at INTEGER;
 
-CREATE TABLE IF NOT EXISTS votes (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_id TEXT NOT NULL,
-  player_id  TEXT NOT NULL,
-  score      INTEGER NOT NULL CHECK (score BETWEEN 1 AND 5),
-  created_at INTEGER NOT NULL,
-  FOREIGN KEY (session_id) REFERENCES sessions(id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
-CREATE INDEX IF NOT EXISTS idx_votes_session_player ON votes(session_id, player_id);
-
+-- Create vote_submissions if it doesn't exist, then add user_id column
 CREATE TABLE IF NOT EXISTS vote_submissions (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_id TEXT NOT NULL,
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id  TEXT NOT NULL,
   voter_token TEXT,
-  user_id    TEXT,
-  created_at INTEGER NOT NULL,
+  created_at  INTEGER NOT NULL,
   FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
-
+ALTER TABLE vote_submissions ADD COLUMN user_id TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_vote_sub_user ON vote_submissions(session_id, user_id) WHERE user_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -42,10 +25,10 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS user_settings (
-  user_id    TEXT PRIMARY KEY,
-  num_teams  INTEGER NOT NULL DEFAULT 2,
-  pp_team    INTEGER NOT NULL DEFAULT 5,
-  sort_mode  TEXT NOT NULL DEFAULT 'random',
+  user_id   TEXT PRIMARY KEY,
+  num_teams INTEGER NOT NULL DEFAULT 2,
+  pp_team   INTEGER NOT NULL DEFAULT 5,
+  sort_mode TEXT NOT NULL DEFAULT 'random',
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );

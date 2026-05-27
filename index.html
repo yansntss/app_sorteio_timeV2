@@ -365,6 +365,53 @@
     }
     .toast.on { transform: translateX(-50%) translateY(0); }
 
+    /* ── USER BAR ───────────────────────────── */
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 680px;
+      margin: 0 auto 4px;
+      padding: 6px 14px;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .user-bar.hidden { display: none !important; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+      background: var(--card2); flex-shrink: 0;
+    }
+    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-logout {
+      background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 3px 10px; font-size: .72rem; cursor: pointer;
+      font-family: inherit; transition: all .15s; white-space: nowrap;
+    }
+    .btn-logout:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── LOGIN SCREEN ───────────────────────── */
+    .login-panel {
+      text-align: center; padding: 48px 28px;
+    }
+    .login-panel .logo-big { font-size: 3rem; margin-bottom: 12px; display: block; }
+    .login-panel h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--green); margin-bottom: 10px;
+    }
+    .login-panel p { color: var(--text-dim); font-size: .86rem; margin-bottom: 24px; }
+    .btn-login {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 14px 32px;
+      background: var(--green); color: #000;
+      border-radius: 9px; font-weight: 700; font-size: 1rem;
+      text-decoration: none; letter-spacing: .5px;
+      transition: all .18s;
+    }
+    .btn-login:hover { filter: brightness(1.15); box-shadow: 0 0 22px var(--green-glow); transform: translateY(-1px); }
+
     /* ── UTILS ──────────────────────────────── */
     .hidden { display: none !important; }
     .mt8  { margin-top: 8px; }
@@ -385,6 +432,13 @@
   <h1>Alto Valor FC</h1>
   <p>Sorteador de Times</p>
 </header>
+
+<!-- ══════════════════════════ USER BAR ══════════════════════════════════ -->
+<div class="user-bar hidden" id="userBar">
+  <img class="user-avatar" id="userAvatar" src="" alt="">
+  <span class="user-name" id="userName"></span>
+  <button class="btn-logout" onclick="location.href='/api/auth/logout'">Sair</button>
+</div>
 
 <!-- ══════════════════════════ STEP INDICATOR ════════════════════════════ -->
 <div class="steps">
@@ -544,6 +598,7 @@ const PALETTES = [
 ];
 
 /* ── STATE ────────────────────────────────────────────────────────────── */
+let currentUser = null;   // { id, email, name, picture }
 let players     = [];   // { id, name, stars, isGK }
 let config      = { numTeams: 2, ppTeam: 5 };
 let sortMode    = 'random';   // 'random' | 'balanced'
@@ -553,7 +608,30 @@ let history     = [];
 let currentVoteSession = null;  // { id, players } da ultima sessao criada pro currentTeams atual
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+  // 1. Check auth
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    currentUser = data.user;
+  } catch { /* silent */ }
+
+  if (!currentUser) {
+    showLoginScreen();
+    return;
+  }
+
+  // 2. Show user header
+  renderUserBar();
+
+  // 3. Load settings from server
+  try {
+    const s = await fetch('/api/settings').then(r => r.json());
+    document.getElementById('numTeams').value = s.num_teams ?? 2;
+    document.getElementById('ppTeam').value   = s.pp_team   ?? 5;
+  } catch { /* silent */ }
+
+  // 4. Restore localStorage as fallback
   try {
     localStorage.removeItem('racha_fixed');
     const p = localStorage.getItem('racha_players');
@@ -562,14 +640,37 @@ window.addEventListener('load', () => {
     if (h) history = JSON.parse(h);
     const ni = localStorage.getItem('racha_names');
     if (ni) document.getElementById('namesInput').value = ni;
-    const cf = localStorage.getItem('racha_config');
-    if (cf) {
-      const c = JSON.parse(cf);
-      document.getElementById('numTeams').value = c.numTeams ?? 2;
-      document.getElementById('ppTeam').value   = c.ppTeam   ?? 5;
-    }
-  } catch(e) {/* ignore */}
+  } catch { /* ignore */ }
 });
+
+function showLoginScreen() {
+  // Hide app chrome
+  document.querySelector('.steps').classList.add('hidden');
+  document.getElementById('userBar').classList.add('hidden');
+  // Replace container content
+  document.querySelector('.container').innerHTML = `
+    <div class="panel login-panel">
+      <span class="logo-big">⚽</span>
+      <h2>Alto Valor FC</h2>
+      <p>Faça login para organizar seus rachas</p>
+      <a href="/api/auth/login" class="btn-login">🔐 Entrar com Google</a>
+    </div>`;
+}
+
+function renderUserBar() {
+  if (!currentUser) return;
+  const bar    = document.getElementById('userBar');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  if (currentUser.picture) {
+    avatar.src = currentUser.picture;
+    avatar.style.display = '';
+  } else {
+    avatar.style.display = 'none';
+  }
+  name.textContent = currentUser.name || currentUser.email || '';
+  bar.classList.remove('hidden');
+}
 
 function save() {
   try {
@@ -599,7 +700,7 @@ function setStep(n) {
 
 function gotoStep1() { setStep(1); }
 
-function gotoStep2() {
+async function gotoStep2() {
   const raw = document.getElementById('namesInput').value.trim();
   const names = raw.split('\n').map(n => n.trim()).filter(Boolean);
   config.numTeams = Math.max(2, parseInt(document.getElementById('numTeams').value) || 2);
@@ -613,6 +714,19 @@ function gotoStep2() {
   // Merge: preserve ratings for existing names
   const oldMap = Object.fromEntries(players.map(p => [p.name, p]));
   players = names.map((name, i) => oldMap[name] ? { ...oldMap[name] } : { id: Date.now()+i, name, stars: 3, isGK: false });
+
+  // Fetch player profiles from server and auto-fill stars
+  try {
+    const res = await fetch('/api/players');
+    const data = await res.json();
+    const profileMap = Object.fromEntries((data.players || []).map(p => [p.name, p]));
+    players.forEach(p => {
+      const profile = profileMap[p.name];
+      if (profile && profile.vote_count > 0) {
+        p.stars = Math.round(profile.avg_rating); // round to 1-5
+      }
+    });
+  } catch { /* silent */ }
 
   save();
   renderList();
@@ -787,14 +901,37 @@ async function sortear() {
 
   renderResults(teams, leftover);
 
-  // Save to history
+  // Save to history (local)
+  const teamsSnapshot = teams.map(t => ({ name: t.name, players: t.players.map(p => p.name) }));
   history.unshift({
     date: new Date().toLocaleString('pt-BR'),
     mode: sortMode === 'balanced' ? 'Balanceado' : 'Aleatório',
-    teams: teams.map(t => ({ name: t.name, players: t.players.map(p => p.name) })),
+    teams: teamsSnapshot,
   });
   if (history.length > 5) history.pop();
   save();
+
+  // Save to server
+  try {
+    await fetch('/api/sorteios', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        mode:   sortMode === 'balanced' ? 'Balanceado' : 'Aleatório',
+        config: { numTeams: config.numTeams, ppTeam: config.ppTeam },
+        teams:  teamsSnapshot,
+      }),
+    });
+  } catch { /* silent */ }
+
+  // Save settings to server
+  try {
+    await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ num_teams: config.numTeams, pp_team: config.ppTeam, sort_mode: sortMode }),
+    });
+  } catch { /* silent */ }
 
   btn.disabled = false;
 }
@@ -924,10 +1061,9 @@ function renderVoteShare(session) {
     <div class="vote-link" id="voteUrl">${esc(url)}</div>
     <div class="act-row" style="margin-top:0">
       <button class="btn btn-primary" onclick="copyVoteLink()">📋 Copiar link</button>
-      <button class="btn btn-secondary" id="btnOpenVote">🔗 Abrir</button>
+      <button class="btn btn-secondary" onclick="window.open('${esc(url)}','_blank')">🔗 Abrir</button>
     </div>
     <p class="tip" style="margin-top:10px">Sessão: <b>${esc(session.id)}</b> · ${session.players.length} jogadores</p>`;
-  document.getElementById('btnOpenVote').onclick = () => window.open(url, '_blank');
 }
 
 function copyVoteLink() {
@@ -942,7 +1078,20 @@ function closeVoteClick(e) { if (e.target.id === 'voteModal') closeVote(); }
 function closeVote() { document.getElementById('voteModal').classList.remove('on'); }
 
 /* ── HISTORY ──────────────────────────────────────────────────────────── */
-function showHist() {
+async function showHist() {
+  // Try to fetch from server first
+  try {
+    const res  = await fetch('/api/sorteios');
+    const data = await res.json();
+    if (data.sorteios && data.sorteios.length) {
+      history = data.sorteios.map(s => ({
+        date:  new Date(s.created_at).toLocaleString('pt-BR'),
+        mode:  s.mode,
+        teams: JSON.parse(s.teams),
+      }));
+    }
+  } catch { /* fallback to localStorage */ }
+
   const list = document.getElementById('histList');
   if (!history.length) {
     list.innerHTML = '<p style="color:var(--text-dim);font-size:.85rem">Nenhum sorteio ainda.</p>';

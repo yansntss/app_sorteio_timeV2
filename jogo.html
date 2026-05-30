@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo — Alto Valor FC</title>
+  <style>
+    :root {
+      --bg:         #07090a;
+      --surface:    #0e1214;
+      --card:       #141a1d;
+      --card2:      #1a2228;
+      --border:     #243038;
+      --green:      #39e073;
+      --green-dim:  #27a350;
+      --green-glow: rgba(57,224,115,.25);
+      --gold:       #f5c842;
+      --red:        #f06060;
+      --text:       #d8eae0;
+      --text-dim:   #4d6655;
+      --radius:     14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 100px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
+    }
+
+    header { text-align: center; padding: 36px 20px 8px; }
+    .logo-ball { font-size: 2rem; display: block; margin-bottom: 4px; }
+    header h1 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #39e073 30%, #9fefbb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: .72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 520px;
+      margin: 0 auto 8px;
+      padding: 0 16px;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .user-bar.hidden { display: none !important; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+      background: var(--card2);
+    }
+    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-link {
+      color: var(--text-dim);
+      font-size: .72rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      cursor: pointer;
+      background: transparent;
+      font-family: inherit;
+    }
+    .bar-link:hover { color: var(--red); border-color: var(--red); }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .panel h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      color: var(--green);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      font-size: 1.05rem;
+    }
+
+    .btn {
+      padding: 13px 16px; border: 0; border-radius: 11px;
+      font-weight: 700; font-size: .92rem; cursor: pointer;
+      transition: all .15s; font-family: inherit;
+      width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), var(--green-dim));
+      color: #062;
+    }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 0 22px var(--green-glow); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ghost {
+      background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--green); border-color: var(--green); }
+    .btn-danger {
+      background: rgba(240,96,96,.1);
+      color: var(--red);
+      border: 1px solid rgba(240,96,96,.3);
+    }
+    .btn-danger:hover { background: rgba(240,96,96,.2); }
+
+    .game-header-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .game-header-title {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .game-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: .82rem;
+      color: var(--text-dim);
+    }
+    .game-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .badge {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+    .badge-open     { background: rgba(57,224,115,.12); color: var(--green); border: 1px solid rgba(57,224,115,.3); }
+    .badge-closed   { background: rgba(245,200,66,.12); color: var(--gold);  border: 1px solid rgba(245,200,66,.3); }
+    .badge-finished { background: rgba(77,102,85,.12);  color: var(--text-dim); border: 1px solid var(--border); }
+
+    .progress-wrap { margin-top: 4px; }
+    .progress-bar-bg {
+      background: var(--card2);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--green);
+      transition: width .4s;
+    }
+    .progress-bar-fill.full { background: var(--red); }
+    .progress-text {
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .progress-text .num { color: var(--green); font-weight: 700; }
+    .progress-text .num.full { color: var(--red); }
+
+    /* RSVP section */
+    .rsvp-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .rsvp-separator {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: .75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 14px 0;
+      position: relative;
+    }
+    .rsvp-separator::before,
+    .rsvp-separator::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: var(--border);
+    }
+    .rsvp-separator::before { left: 0; }
+    .rsvp-separator::after  { right: 0; }
+
+    .rsvp-confirmed {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(57,224,115,.07);
+      border: 1px solid rgba(57,224,115,.25);
+      border-radius: 11px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .rsvp-confirmed-icon { font-size: 1.4rem; }
+    .rsvp-confirmed-text { flex: 1; font-size: .9rem; }
+    .rsvp-confirmed-text strong { color: var(--green); }
+
+    .input {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 13px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .92rem;
+      margin-bottom: 10px;
+      transition: border-color .15s;
+    }
+    .input:focus { outline: none; border-color: var(--green); }
+    .input::placeholder { color: var(--text-dim); }
+
+    .msg {
+      padding: 11px 13px; border-radius: 9px;
+      border: 1px solid var(--border); font-size: .85rem;
+      margin-bottom: 12px;
+    }
+    .msg-err  { background: rgba(240,96,96,.09);  border-color: var(--red);   color: var(--red);   }
+    .msg-ok   { background: rgba(57,224,115,.07); border-color: var(--green); color: var(--green); }
+    .msg-warn { background: rgba(245,200,66,.07); border-color: var(--gold);  color: var(--gold);  }
+
+    /* Players list */
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .player-row:last-child { border-bottom: none; }
+    .player-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .player-initials {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .player-name { flex: 1; font-size: .92rem; font-weight: 600; }
+    .badge-guest {
+      font-size: .62rem;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color .15s;
+      line-height: 1;
+    }
+    .remove-btn:hover { color: var(--red); }
+
+    /* Admin section */
+    .admin-section {
+      background: var(--surface);
+      border: 1px solid rgba(245,200,66,.25);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .admin-section h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      font-size: 1.05rem;
+    }
+    .add-guest-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .add-guest-form input {
+      flex: 1;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 13px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .88rem;
+    }
+    .add-guest-form input:focus { outline: none; border-color: var(--gold); }
+    .add-guest-form input::placeholder { color: var(--text-dim); }
+    .btn-add-guest {
+      background: rgba(245,200,66,.12);
+      color: var(--gold);
+      border: 1px solid rgba(245,200,66,.3);
+      border-radius: 9px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .88rem;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn-add-guest:hover { background: rgba(245,200,66,.22); }
+
+    .btn-status {
+      background: rgba(245,200,66,.1);
+      color: var(--gold);
+      border: 1px solid rgba(245,200,66,.3);
+      border-radius: 9px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .88rem;
+      transition: background .15s;
+      width: 100%;
+    }
+    .btn-status:hover { background: rgba(245,200,66,.2); }
+
+    .loading {
+      text-align: center; padding: 36px 0; color: var(--text-dim);
+      font-size: .85rem; letter-spacing: 3px; text-transform: uppercase;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-dim);
+      font-size: .8rem;
+      text-decoration: none;
+      margin-bottom: 14px;
+    }
+    .back-link:hover { color: var(--green); }
+
+    .toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 22px;
+      font-size: .88rem; z-index: 700;
+      transition: transform .28s ease; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .toast.on { transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 460px) {
+      .panel, .rsvp-section, .admin-section, .game-header-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo-ball">⚽</span>
+  <h1>Alto Valor FC</h1>
+  <p>Detalhes do Jogo</p>
+</header>
+
+<div class="user-bar hidden" id="userBar">
+  <img class="user-avatar" id="userAvatar" src="" alt="">
+  <span class="user-name" id="userName"></span>
+  <a href="/jogos.html" class="bar-link">Jogos</a>
+  <a href="/api/auth/logout" class="bar-link">Sair</a>
+</div>
+
+<div class="container">
+  <a href="/jogos.html" class="back-link">&#8592; Voltar para Jogos</a>
+  <div id="root">
+    <div class="panel"><div class="loading">carregando...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+const gameId = new URLSearchParams(location.search).get('id');
+let currentUser = null;
+let gameData = null;        // { game, confirmations, myConfirmationId }
+let isAdmin = false;
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _tt;
+function toast(m) {
+  const el = document.getElementById('toast');
+  el.textContent = m;
+  el.classList.add('on');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('on'), 2800);
+}
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  return `${days[dt.getDay()]}, ${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+}
+
+function statusLabel(status) {
+  if (status === 'open')     return ['Aberto',    'badge-open'];
+  if (status === 'closed')   return ['Fechado',   'badge-closed'];
+  if (status === 'finished') return ['Encerrado', 'badge-finished'];
+  return [status, 'badge-finished'];
+}
+
+function initials(name) {
+  return (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+function renderUserBar(user) {
+  const bar    = document.getElementById('userBar');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  if (user) {
+    avatar.src = user.picture || '';
+    avatar.style.display = user.picture ? '' : 'none';
+    name.textContent = user.name || user.email || '';
+    bar.classList.remove('hidden');
+  }
+}
+
+// Guest confirmation stored in localStorage as { id, name }
+function getGuestConfirmation(gid) {
+  try { return JSON.parse(localStorage.getItem('guest_' + gid)); } catch { return null; }
+}
+function setGuestConfirmation(gid, id, name) {
+  localStorage.setItem('guest_' + gid, JSON.stringify({ id, name }));
+}
+function clearGuestConfirmation(gid) {
+  localStorage.removeItem('guest_' + gid);
+}
+
+function renderPage() {
+  const { game, confirmations, myConfirmationId } = gameData;
+  const root = document.getElementById('root');
+
+  const count = confirmations.length;
+  const max = game.max_players || 24;
+  const pct = Math.min(100, Math.round(count / max * 100));
+  const isFull = count >= max;
+  const isClosed = game.status !== 'open';
+  const [statusText, statusCls] = statusLabel(game.status);
+
+  // Build header card
+  let html = `
+  <div class="game-header-card">
+    <div class="game-header-title">${esc(game.title)}</div>
+    <span class="badge ${statusCls}">${statusText}</span>
+    <div class="game-meta">
+      <span>📅 ${esc(formatDate(game.game_date))}</span>
+      <span>⏰ ${esc(game.game_time)}</span>
+      ${game.location ? `<span>📍 ${esc(game.location)}</span>` : ''}
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill${isFull ? ' full' : ''}" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-text">
+        <span class="num${isFull ? ' full' : ''}">${count}</span> de ${max} vagas confirmadas
+      </div>
+    </div>
+  </div>`;
+
+  // RSVP section
+  html += `<div class="rsvp-section" id="rsvpSection">`;
+  html += renderRsvp(game, myConfirmationId, isFull, isClosed);
+  html += `</div>`;
+
+  // Players list
+  html += `
+  <div class="panel">
+    <h2>${count} Confirmado${count !== 1 ? 's' : ''}</h2>
+    <div id="playersList">`;
+  html += renderPlayersList(confirmations);
+  html += `</div></div>`;
+
+  // Admin section
+  if (isAdmin) {
+    const toggleLabel = game.status === 'open' ? 'Fechar Vagas' : 'Abrir Vagas';
+    const toggleStatus = game.status === 'open' ? 'closed' : 'open';
+    html += `
+    <div class="admin-section" id="adminSection">
+      <h2>Painel Admin</h2>
+      <div class="add-guest-form">
+        <input type="text" id="adminGuestName" placeholder="Nome do convidado" maxlength="50">
+        <button class="btn-add-guest" onclick="adminAddGuest()">Adicionar</button>
+      </div>
+      <div id="adminMsg"></div>
+      <button class="btn-status" onclick="toggleStatus('${toggleStatus}')">${toggleLabel}</button>
+    </div>`;
+  }
+
+  root.innerHTML = html;
+
+  // Attach event listeners after DOM update
+  attachRsvpListeners();
+}
+
+function renderRsvp(game, myConfirmationId, isFull, isClosed) {
+  // Closed or finished
+  if (game.status === 'finished') {
+    return `<div class="msg msg-warn">Este jogo foi encerrado.</div>`;
+  }
+  if (isClosed && !isFull) {
+    return `<div class="msg msg-warn">As inscrições estão fechadas no momento.</div>`;
+  }
+  if (isFull) {
+    return `<div class="msg msg-warn">Vagas esgotadas para este jogo.</div>`;
+  }
+
+  // Logged-in user
+  if (currentUser) {
+    if (myConfirmationId) {
+      return `
+        <div class="rsvp-confirmed">
+          <span class="rsvp-confirmed-icon">✓</span>
+          <div class="rsvp-confirmed-text">Presença confirmada como <strong>${esc(currentUser.name)}</strong></div>
+        </div>
+        <button class="btn btn-ghost" id="cancelBtn" onclick="cancelConfirmation('${esc(myConfirmationId)}', false)">Cancelar presença</button>`;
+    }
+    return `<button class="btn btn-primary" id="confirmBtn" onclick="confirmAsUser()">✓ Confirmar presença</button>`;
+  }
+
+  // Not logged in — check localStorage for guest confirmation
+  const guest = getGuestConfirmation(gameId);
+  if (guest) {
+    return `
+      <div class="rsvp-confirmed">
+        <span class="rsvp-confirmed-icon">✓</span>
+        <div class="rsvp-confirmed-text">Confirmado como convidado: <strong>${esc(guest.name)}</strong></div>
+      </div>
+      <button class="btn btn-ghost" id="cancelGuestBtn" onclick="cancelConfirmation('${esc(guest.id)}', true)">Cancelar presença</button>`;
+  }
+
+  return `
+    <a href="/api/auth/login?redirect=${encodeURIComponent(location.href)}" class="btn btn-primary" style="text-decoration:none;display:block;text-align:center;margin-bottom:14px">Entrar com Google</a>
+    <div class="rsvp-separator">ou</div>
+    <div id="guestMsg"></div>
+    <input class="input" type="text" id="guestNameInput" placeholder="Seu nome" maxlength="50">
+    <button class="btn btn-ghost" id="guestConfirmBtn" onclick="confirmAsGuest()">Confirmar como convidado</button>`;
+}
+
+function renderPlayersList(confirmations) {
+  if (!confirmations.length) {
+    return `<p style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:16px 0">Nenhuma confirmação ainda.</p>`;
+  }
+  return confirmations.map(c => {
+    const name = c.user_id ? (c.user_name || 'Usuário') : (c.guest_name || 'Convidado');
+    const avatarHtml = c.user_picture
+      ? `<img class="player-avatar" src="${esc(c.user_picture)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      + `<div class="player-initials" style="display:none">${esc(initials(name))}</div>`
+      : `<div class="player-initials">${esc(initials(name))}</div>`;
+
+    const guestBadge = !c.user_id ? `<span class="badge-guest">Convidado</span>` : '';
+    const removeBtn = isAdmin
+      ? `<button class="remove-btn" onclick="adminRemove('${esc(c.id)}')" title="Remover">&#10005;</button>`
+      : '';
+
+    return `<div class="player-row" id="row-${esc(c.id)}">
+      ${avatarHtml}
+      <span class="player-name">${esc(name)}</span>
+      ${guestBadge}
+      ${removeBtn}
+    </div>`;
+  }).join('');
+}
+
+function attachRsvpListeners() {
+  // Nothing extra needed — onclick handlers are inline
+}
+
+async function confirmAsUser() {
+  const btn = document.getElementById('confirmBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Confirmando...'; }
+  try {
+    const res = await fetch('/api/confirmations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ gameId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    toast('Presenca confirmada!');
+    await reloadGame();
+  } catch (e) {
+    toast('Erro: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Confirmar presença'; }
+  }
+}
+
+async function confirmAsGuest() {
+  const nameEl = document.getElementById('guestNameInput');
+  const msgEl  = document.getElementById('guestMsg');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) {
+    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite seu nome.'; }
+    return;
+  }
+  const btn = document.getElementById('guestConfirmBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Confirmando...'; }
+  try {
+    const res = await fetch('/api/confirmations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ gameId, guestName: name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    setGuestConfirmation(gameId, data.id, data.guestName || name);
+    toast('Presenca confirmada!');
+    await reloadGame();
+  } catch (e) {
+    toast('Erro: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirmar como convidado'; }
+  }
+}
+
+async function cancelConfirmation(id, isGuest) {
+  if (!confirm('Cancelar presença?')) return;
+  try {
+    const res = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    if (isGuest) clearGuestConfirmation(gameId);
+    toast('Presenca cancelada.');
+    await reloadGame();
+  } catch (e) {
+    toast('Erro: ' + e.message);
+  }
+}
+
+async function adminRemove(id) {
+  if (!confirm('Remover esta confirmação?')) return;
+  try {
+    const res = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    toast('Removido.');
+    await reloadGame();
+  } catch (e) {
+    toast('Erro: ' + e.message);
+  }
+}
+
+async function adminAddGuest() {
+  const nameEl = document.getElementById('adminGuestName');
+  const msgEl  = document.getElementById('adminMsg');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) {
+    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite o nome.'; }
+    return;
+  }
+  try {
+    const res = await fetch('/api/confirmations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ gameId, guestName: name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    if (nameEl) nameEl.value = '';
+    if (msgEl) { msgEl.className = 'msg msg-ok'; msgEl.textContent = name + ' adicionado.'; setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 2000); }
+    await reloadGame();
+  } catch (e) {
+    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Erro: ' + e.message; }
+  }
+}
+
+async function toggleStatus(newStatus) {
+  try {
+    const res = await fetch('/api/games/' + gameId, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    toast('Status atualizado.');
+    await reloadGame();
+  } catch (e) {
+    toast('Erro: ' + e.message);
+  }
+}
+
+async function reloadGame() {
+  try {
+    const res = await fetch('/api/games/' + gameId);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    gameData = data;
+    renderPage();
+  } catch (e) {
+    toast('Erro ao recarregar: ' + e.message);
+  }
+}
+
+async function boot() {
+  if (!gameId) {
+    document.getElementById('root').innerHTML = '<div class="panel"><p style="color:var(--red)">ID do jogo não informado.</p></div>';
+    return;
+  }
+
+  // Load auth and game in parallel
+  const [meRes, gameRes] = await Promise.all([
+    fetch('/api/auth/me').then(r => r.json()).catch(() => ({ user: null })),
+    fetch('/api/games/' + gameId).then(r => r.json()).catch(() => null),
+  ]);
+
+  currentUser = meRes.user;
+  isAdmin = !!(currentUser && currentUser.is_admin);
+
+  if (currentUser) renderUserBar(currentUser);
+
+  if (!gameRes || !gameRes.game) {
+    document.getElementById('root').innerHTML = '<div class="panel"><p style="color:var(--red)">Jogo não encontrado.</p></div>';
+    return;
+  }
+
+  gameData = gameRes;
+  renderPage();
+}
+
+boot();
+</script>
+</body>
+</html>

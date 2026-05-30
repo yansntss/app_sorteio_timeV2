@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Jogo — Alto Valor FC</title>
+  <style>
+    :root {
+      --bg:         #07090a;
+      --surface:    #0e1214;
+      --card:       #141a1d;
+      --card2:      #1a2228;
+      --border:     #243038;
+      --green:      #39e073;
+      --green-dim:  #27a350;
+      --green-glow: rgba(57,224,115,.25);
+      --gold:       #f5c842;
+      --red:        #f06060;
+      --text:       #d8eae0;
+      --text-dim:   #4d6655;
+      --radius:     14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
+    }
+
+    header { text-align: center; padding: 36px 20px 8px; }
+    .logo-ball { font-size: 2rem; display: block; margin-bottom: 4px; }
+    header h1 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #39e073 30%, #9fefbb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: .72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 520px;
+      margin: 0 auto 8px;
+      padding: 0 16px;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .user-bar.hidden { display: none !important; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+      background: var(--card2);
+    }
+    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-link {
+      color: var(--text-dim);
+      font-size: .72rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      cursor: pointer;
+      background: transparent;
+      font-family: inherit;
+    }
+    .bar-link:hover { color: var(--red); border-color: var(--red); }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .panel h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      color: var(--green);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: .78rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .form-group label span.required { color: var(--red); margin-left: 2px; }
+
+    .input {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 13px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .92rem;
+      transition: border-color .15s;
+    }
+    .input:focus { outline: none; border-color: var(--green); }
+    .input::placeholder { color: var(--text-dim); }
+
+    /* Style date/time inputs */
+    input[type="date"], input[type="time"], input[type="number"] {
+      color-scheme: dark;
+    }
+
+    .btn {
+      padding: 14px 16px; border: 0; border-radius: 11px;
+      font-weight: 700; font-size: .95rem; cursor: pointer;
+      transition: all .15s; font-family: inherit;
+      width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), var(--green-dim));
+      color: #062;
+    }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 0 22px var(--green-glow); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .msg {
+      padding: 11px 13px; border-radius: 9px;
+      border: 1px solid var(--border); font-size: .85rem;
+      margin-bottom: 14px;
+    }
+    .msg-err  { background: rgba(240,96,96,.09);  border-color: var(--red);   color: var(--red);   }
+    .msg-ok   { background: rgba(57,224,115,.07); border-color: var(--green); color: var(--green); }
+
+    .access-denied {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text-dim);
+    }
+    .access-denied p { margin-bottom: 8px; }
+    .access-denied strong { color: var(--red); font-size: 1.1rem; }
+
+    .loading {
+      text-align: center; padding: 36px 0; color: var(--text-dim);
+      font-size: .85rem; letter-spacing: 3px; text-transform: uppercase;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-dim);
+      font-size: .8rem;
+      text-decoration: none;
+      margin-bottom: 14px;
+    }
+    .back-link:hover { color: var(--green); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 460px) {
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo-ball">⚽</span>
+  <h1>Alto Valor FC</h1>
+  <p>Criar Jogo</p>
+</header>
+
+<div class="user-bar hidden" id="userBar">
+  <img class="user-avatar" id="userAvatar" src="" alt="">
+  <span class="user-name" id="userName"></span>
+  <a href="/jogos.html" class="bar-link">Jogos</a>
+  <a href="/api/auth/logout" class="bar-link">Sair</a>
+</div>
+
+<div class="container">
+  <a href="/jogos.html" class="back-link">&#8592; Voltar para Jogos</a>
+  <div id="root">
+    <div class="panel"><div class="loading">carregando...</div></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+let currentUser = null;
+
+function renderUserBar(user) {
+  const bar    = document.getElementById('userBar');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  if (user) {
+    avatar.src = user.picture || '';
+    avatar.style.display = user.picture ? '' : 'none';
+    name.textContent = user.name || user.email || '';
+    bar.classList.remove('hidden');
+  }
+}
+
+function renderForm() {
+  // Default date: next Saturday or 7 days from now
+  const today = new Date();
+  const defaultDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+  const pad = n => String(n).padStart(2, '0');
+  const defaultDateStr = `${defaultDate.getFullYear()}-${pad(defaultDate.getMonth()+1)}-${pad(defaultDate.getDate())}`;
+
+  document.getElementById('root').innerHTML = `
+    <div class="panel">
+      <h2>Novo Jogo</h2>
+      <div id="formMsg"></div>
+      <div class="form-group">
+        <label>Título <span class="required">*</span></label>
+        <input class="input" type="text" id="title" placeholder="Ex: Racha de Quarta" maxlength="120" autofocus>
+      </div>
+      <div class="form-group">
+        <label>Data <span class="required">*</span></label>
+        <input class="input" type="date" id="game_date" value="${defaultDateStr}">
+      </div>
+      <div class="form-group">
+        <label>Horário</label>
+        <input class="input" type="time" id="game_time" value="21:00">
+      </div>
+      <div class="form-group">
+        <label>Local</label>
+        <input class="input" type="text" id="location" placeholder="Ex: Campo do Zé" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label>Máx. jogadores</label>
+        <input class="input" type="number" id="max_players" value="24" min="2" max="100">
+      </div>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">Criar Jogo</button>
+    </div>`;
+}
+
+async function submitForm() {
+  const btn     = document.getElementById('submitBtn');
+  const msgEl   = document.getElementById('formMsg');
+  const title   = document.getElementById('title').value.trim();
+  const date    = document.getElementById('game_date').value;
+  const time    = document.getElementById('game_time').value || '21:00';
+  const loc     = document.getElementById('location').value.trim();
+  const maxPl   = parseInt(document.getElementById('max_players').value, 10) || 24;
+
+  msgEl.textContent = '';
+  msgEl.className = 'msg';
+
+  if (!title) {
+    msgEl.className = 'msg msg-err';
+    msgEl.textContent = 'O título é obrigatório.';
+    return;
+  }
+  if (!date) {
+    msgEl.className = 'msg msg-err';
+    msgEl.textContent = 'A data é obrigatória.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+
+  try {
+    const res = await fetch('/api/games', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        game_date: date,
+        game_time: time,
+        location: loc || undefined,
+        max_players: maxPl,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    // Redirect to game page
+    location.href = '/jogo.html?id=' + data.id;
+  } catch (e) {
+    msgEl.className = 'msg msg-err';
+    msgEl.textContent = 'Erro: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Criar Jogo';
+  }
+}
+
+async function boot() {
+  // Check auth
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    currentUser = data.user;
+  } catch {
+    currentUser = null;
+  }
+
+  if (!currentUser) {
+    location.href = '/api/auth/login?redirect=' + encodeURIComponent(location.href);
+    return;
+  }
+
+  renderUserBar(currentUser);
+
+  if (!currentUser.is_admin) {
+    document.getElementById('root').innerHTML = `
+      <div class="panel">
+        <div class="access-denied">
+          <strong>Acesso Restrito</strong>
+          <p style="margin-top:12px">Somente administradores podem criar jogos.</p>
+          <a href="/jogos.html" style="color:var(--green);text-decoration:none;font-size:.88rem">&#8592; Voltar para Jogos</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  renderForm();
+}
+
+boot();
+</script>
+</body>
+</html>

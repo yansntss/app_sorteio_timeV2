@@ -294,7 +294,18 @@ async function boot() {
 
   // 3. Load session
   try {
-    session = await api(`/api/sessions/${encodeURIComponent(sid)}`);
+    const res  = await fetch(`/api/sessions/${encodeURIComponent(sid)}`);
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 410) {
+      setRoot(`
+        <div class="panel">
+          <div class="vmsg err">⏰ Esta sessão de votação foi encerrada (prazo de 24h expirado).</div>
+          <button class="btn btn-ghost" style="width:100%;margin-top:14px" onclick="showResults()">Ver ranking final</button>
+        </div>`);
+      return;
+    }
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    session = data;
   } catch (e) {
     setRoot(`<div class="panel"><div class="vmsg err">❌ ${esc(e.message)}</div></div>`);
     return;
@@ -357,6 +368,9 @@ async function submitVotes() {
     if (e.message && e.message.toLowerCase().includes('ja votou')) {
       toast('⚠️ Você já votou nesta sessão.');
       await showResults('Você já votou nesta sessão.');
+    } else if (e.message && e.message.toLowerCase().includes('encerrada')) {
+      toast('⏰ Votação encerrada.');
+      await showResults('Sessão encerrada — veja o ranking final.');
     } else {
       toast('❌ ' + e.message);
     }

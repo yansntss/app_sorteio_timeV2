@@ -22,12 +22,13 @@ export async function onRequestPost({ request, env, data }) {
   const id        = newSessionId();
   const createdAt = Date.now();
   const ownerId   = data?.user?.sub ?? null;
+  const expiresAt = createdAt + 24 * 60 * 60 * 1000;
 
   await env.DB.prepare(
-    "INSERT INTO sessions (id, created_at, players, owner_id) VALUES (?, ?, ?, ?)"
+    "INSERT INTO sessions (id, created_at, players, owner_id, expires_at) VALUES (?, ?, ?, ?, ?)"
   )
-    .bind(id, createdAt, JSON.stringify(players), ownerId)
+    .bind(id, createdAt, JSON.stringify(players), ownerId, expiresAt)
     .run();
 
-  return json({ id, createdAt, players }, 201);
+  return json({ id, createdAt, expiresAt, players }, 201);
 }

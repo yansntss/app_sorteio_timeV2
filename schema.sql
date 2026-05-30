@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at        INTEGER NOT NULL,
   players           TEXT NOT NULL,
   owner_id          TEXT,
-  rating_applied_at INTEGER
+  rating_applied_at INTEGER,
+  expires_at        INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS votes (

@@ -12,12 +12,16 @@ export async function onRequestPost({ request, env, data }) {
   const userId = data?.user?.sub ?? null;
 
   const session = await env.DB.prepare(
-    "SELECT players FROM sessions WHERE id = ?"
+    "SELECT players, expires_at FROM sessions WHERE id = ?"
   )
     .bind(sessionId)
     .first();
 
   if (!session) return error("sessao nao encontrada", 404);
+
+  if (session.expires_at && Date.now() > session.expires_at) {
+    return error("sessao de votacao encerrada", 410);
+  }
 
   const validIds = new Set(JSON.parse(session.players).map((p) => p.id));
 

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👥 Jogadores — Alto Valor FC</title>
+  <style>
+    :root {
+      --bg:         #07090a;
+      --surface:    #0e1214;
+      --card:       #141a1d;
+      --card2:      #1a2228;
+      --border:     #243038;
+      --green:      #39e073;
+      --green-dim:  #27a350;
+      --green-glow: rgba(57,224,115,.25);
+      --gold:       #f5c842;
+      --red:        #f06060;
+      --text:       #d8eae0;
+      --text-dim:   #4d6655;
+      --radius:     14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
+    }
+
+    header { text-align: center; padding: 36px 20px 8px; }
+    .logo-ball { font-size: 2rem; display: block; margin-bottom: 4px; }
+    header h1 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #39e073 30%, #9fefbb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: .72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 560px;
+      margin: 0 auto 8px;
+      padding: 0 16px;
+      font-size: .78rem;
+      color: var(--text-dim);
+    }
+    .user-bar.hidden { display: none !important; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+    }
+    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-btn {
+      color: var(--text-dim);
+      font-size: .72rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 10px;
+      white-space: nowrap;
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .bar-btn:hover { color: var(--green); border-color: var(--green); }
+    .bar-btn.danger:hover { color: var(--red); border-color: var(--red); }
+
+    .container { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .panel-title {
+      font-family: Impact, 'Arial Black', sans-serif;
+      color: var(--green);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      font-size: 1.05rem;
+    }
+
+    .player-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .player-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .player-name {
+      flex: 1;
+      font-size: .98rem;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .player-rating {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+    .player-votes {
+      color: var(--text-dim);
+      font-size: .72rem;
+      white-space: nowrap;
+    }
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: .72rem;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text-dim);
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .action-btn:hover { color: var(--green); border-color: var(--green); }
+    .action-btn.del:hover { color: var(--red); border-color: var(--red); }
+
+    .edit-form {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .edit-label {
+      font-size: .78rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .edit-label span { color: var(--gold); font-weight: 700; font-size: 1rem; min-width: 28px; }
+    input[type=range] {
+      flex: 1;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+    .edit-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-save {
+      padding: 7px 18px;
+      background: linear-gradient(135deg, var(--green), var(--green-dim));
+      color: #062; border: 0; border-radius: 8px;
+      font-weight: 700; font-size: .82rem; cursor: pointer;
+      font-family: inherit; transition: filter .15s;
+    }
+    .btn-save:hover { filter: brightness(1.15); }
+    .btn-cancel {
+      padding: 7px 14px;
+      background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: .82rem; cursor: pointer; font-family: inherit;
+      transition: all .15s;
+    }
+    .btn-cancel:hover { color: var(--text); border-color: var(--text-dim); }
+
+    .empty {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: .86rem;
+      padding: 28px 0;
+      line-height: 1.6;
+    }
+
+    .loading {
+      text-align: center; padding: 36px 0; color: var(--text-dim);
+      font-size: .85rem; letter-spacing: 3px; text-transform: uppercase;
+    }
+
+    .vmsg {
+      padding: 11px 13px; border-radius: 9px;
+      border: 1px solid var(--border); font-size: .85rem;
+      margin-bottom: 10px;
+    }
+    .vmsg.err { background: rgba(240,96,96,.09); border-color: var(--red); color: var(--red); }
+    .vmsg.ok  { background: rgba(57,224,115,.07); border-color: var(--green); color: var(--green); }
+
+    .toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 22px;
+      font-size: .88rem; z-index: 700;
+      transition: transform .28s ease; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .toast.on { transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo-ball">⚽</span>
+  <h1>Alto Valor FC</h1>
+  <p>Perfis de Jogadores</p>
+</header>
+
+<div class="user-bar hidden" id="userBar">
+  <img class="user-avatar" id="userAvatar" src="" alt="">
+  <span class="user-name" id="userName"></span>
+  <a href="/" class="bar-btn">Sorteio</a>
+  <a href="/api/auth/logout" class="bar-btn danger">Sair</a>
+</div>
+
+<div class="container">
+  <div id="root">
+    <div class="panel"><div class="loading">⏳ carregando...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+let players   = [];
+let editingId = null;
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _tt;
+function toast(m) {
+  const el = document.getElementById('toast');
+  el.textContent = m;
+  el.classList.add('on');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+function setRoot(html) {
+  document.getElementById('root').innerHTML = html;
+}
+
+function starsText(avg) {
+  const full  = Math.floor(avg);
+  const half  = avg - full >= 0.5 ? 1 : 0;
+  const empty = 5 - full - half;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(empty);
+}
+
+async function boot() {
+  try {
+    const res  = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (!data.user) throw new Error('not logged');
+    renderUserBar(data.user);
+  } catch {
+    location.href = '/api/auth/login?redirect=' + encodeURIComponent(location.href);
+    return;
+  }
+
+  await loadPlayers();
+}
+
+function renderUserBar(user) {
+  const bar    = document.getElementById('userBar');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  avatar.src = user.picture || '';
+  avatar.style.display = user.picture ? '' : 'none';
+  name.textContent = user.name;
+  bar.classList.remove('hidden');
+}
+
+async function loadPlayers() {
+  try {
+    const res  = await fetch('/api/players');
+    const data = await res.json();
+    players = data.players || [];
+    renderList();
+  } catch (e) {
+    setRoot(`<div class="panel"><div class="vmsg err">❌ Erro ao carregar jogadores.</div></div>`);
+  }
+}
+
+function renderList() {
+  if (players.length === 0) {
+    setRoot(`
+      <div class="panel">
+        <div class="panel-title">👥 Seus Jogadores</div>
+        <div class="empty">
+          Nenhum jogador ainda.<br>
+          Realize um baba, compartilhe o link de votação e os perfis aparecerão aqui após os resultados serem aplicados.
+        </div>
+      </div>`);
+    return;
+  }
+
+  const rows = players.map(p => renderRow(p)).join('');
+  setRoot(`
+    <div class="panel">
+      <div class="panel-title">👥 Seus Jogadores (${players.length})</div>
+      ${rows}
+    </div>`);
+}
+
+function renderRow(p) {
+  const isEditing = editingId === p.id;
+  const editForm  = isEditing ? `
+    <div class="edit-form">
+      <div class="edit-label">
+        Média:
+        <input type="range" id="slider_${p.id}" min="1" max="5" step="0.1"
+          value="${p.avg_rating}" oninput="updateSliderDisplay('${p.id}')">
+        <span id="sliderVal_${p.id}">${Number(p.avg_rating).toFixed(1)}</span>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-save" onclick="saveEdit('${esc(p.id)}')">Salvar</button>
+        <button class="btn-cancel" onclick="cancelEdit()">Cancelar</button>
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="player-row" id="row_${p.id}">
+      <div class="player-main">
+        <div class="player-name">${esc(p.name)}</div>
+        <div class="player-rating">${Number(p.avg_rating).toFixed(1)} ★</div>
+        <div class="player-votes">${p.vote_count} voto${p.vote_count === 1 ? '' : 's'}</div>
+        ${!isEditing ? `
+          <button class="action-btn" onclick="startEdit('${esc(p.id)}')">Editar</button>
+          <button class="action-btn del" onclick="deletePlayer('${esc(p.id)}', '${esc(p.name)}')">Excluir</button>
+        ` : ''}
+      </div>
+      ${editForm}
+    </div>`;
+}
+
+function updateSliderDisplay(id) {
+  const slider = document.getElementById('slider_' + id);
+  const label  = document.getElementById('sliderVal_' + id);
+  if (slider && label) label.textContent = Number(slider.value).toFixed(1);
+}
+
+function startEdit(id) {
+  editingId = id;
+  renderList();
+  // focus slider after render
+  requestAnimationFrame(() => {
+    const s = document.getElementById('slider_' + id);
+    if (s) s.focus();
+  });
+}
+
+function cancelEdit() {
+  editingId = null;
+  renderList();
+}
+
+async function saveEdit(id) {
+  const slider = document.getElementById('slider_' + id);
+  if (!slider) return;
+  const avg = Number(slider.value);
+
+  try {
+    const res = await fetch(`/api/players/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ avg_rating: avg }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    const p = players.find(x => x.id === id);
+    if (p) p.avg_rating = avg;
+    editingId = null;
+    renderList();
+    toast('✅ Média atualizada!');
+  } catch (e) {
+    toast('❌ ' + e.message);
+  }
+}
+
+async function deletePlayer(id, name) {
+  if (!confirm(`Excluir o perfil de "${name}"?\nEsta ação não pode ser desfeita.`)) return;
+
+  try {
+    const res = await fetch(`/api/players/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    players = players.filter(p => p.id !== id);
+    if (editingId === id) editingId = null;
+    renderList();
+    toast('🗑️ Jogador excluído.');
+  } catch (e) {
+    toast('❌ ' + e.message);
+  }
+}
+
+boot();
+</script>
+</body>
+</html>

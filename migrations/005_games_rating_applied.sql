@@ -1,0 +1,1 @@
+ALTER TABLE games ADD COLUMN rating_applied_at INTEGER DEFAULT NULL;

@@ -15,6 +15,7 @@
       --green-dim:  #27a350;
       --green-glow: rgba(57,224,115,.25);
       --gold:       #f5c842;
+      --blue:       #5ba4f5;
       --red:        #f06060;
       --text:       #d8eae0;
       --text-dim:   #4d6655;
@@ -33,58 +34,48 @@
         repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
     }
 
-    header { text-align: center; padding: 36px 20px 8px; }
-    .logo-ball { font-size: 2rem; display: block; margin-bottom: 4px; }
-    header h1 {
-      font-family: Impact, 'Arial Black', sans-serif;
-      font-size: clamp(1.8rem, 7vw, 2.8rem);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #39e073 30%, #9fefbb);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    header p {
-      color: var(--text-dim);
-      font-size: .72rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    .user-bar {
+    /* ── TOPBAR ─────────────────────────────── */
+    .topbar {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
       max-width: 520px;
-      margin: 0 auto 8px;
-      padding: 0 16px;
-      font-size: .78rem;
-      color: var(--text-dim);
+      margin: 0 auto 20px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
     }
-    .user-bar.hidden { display: none !important; }
-    .user-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      object-fit: cover; border: 1px solid var(--border);
-      background: var(--card2);
-    }
-    .user-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .bar-link {
+    .topbar-back {
       color: var(--text-dim);
-      font-size: .72rem;
       text-decoration: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 2px 8px;
+      font-size: .82rem;
       white-space: nowrap;
-      cursor: pointer;
-      background: transparent;
-      font-family: inherit;
+      transition: color .15s;
     }
-    .bar-link:hover { color: var(--red); border-color: var(--red); }
+    .topbar-back:hover { color: var(--green); }
+    .topbar-brand {
+      flex: 1;
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: .95rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      text-align: center;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-right.hidden { display: none !important; }
+    .topbar-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+    }
+    .topbar-logout {
+      color: var(--text-dim); font-size: .72rem;
+      text-decoration: none; border: 1px solid var(--border);
+      border-radius: 6px; padding: 2px 8px; white-space: nowrap;
+      transition: all .15s;
+    }
+    .topbar-logout:hover { color: var(--red); border-color: var(--red); }
 
+    /* ── LAYOUT ─────────────────────────────── */
     .container { max-width: 520px; margin: 0 auto; padding: 0 16px; }
 
     .panel {
@@ -103,317 +94,257 @@
       font-size: 1.05rem;
     }
 
+    /* ── BUTTONS ────────────────────────────── */
     .btn {
       padding: 13px 16px; border: 0; border-radius: 11px;
       font-weight: 700; font-size: .92rem; cursor: pointer;
-      transition: all .15s; font-family: inherit;
-      width: 100%;
+      transition: all .15s; font-family: inherit; width: 100%;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--green), var(--green-dim));
-      color: #062;
-    }
+    .btn-primary { background: linear-gradient(135deg, var(--green), var(--green-dim)); color: #062; }
     .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 0 22px var(--green-glow); transform: translateY(-1px); }
     .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
-    .btn-ghost {
-      background: transparent; color: var(--text-dim);
-      border: 1px solid var(--border);
-    }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
     .btn-ghost:hover { color: var(--green); border-color: var(--green); }
-    .btn-danger {
-      background: rgba(240,96,96,.1);
-      color: var(--red);
-      border: 1px solid rgba(240,96,96,.3);
-    }
-    .btn-danger:hover { background: rgba(240,96,96,.2); }
 
+    /* ── GAME HEADER CARD ───────────────────── */
     .game-header-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 22px;
+      padding: 20px;
       margin-bottom: 16px;
     }
+    .game-header-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
     .game-header-title {
+      flex: 1;
       font-family: Impact, 'Arial Black', sans-serif;
       font-size: 1.4rem;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--text);
-      margin-bottom: 10px;
+      line-height: 1.2;
     }
-    .game-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-      font-size: .82rem;
-      color: var(--text-dim);
+    .share-btn {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-dim); cursor: pointer;
+      font-size: .85rem; padding: 5px 9px; transition: all .15s;
+      flex-shrink: 0; font-family: inherit;
     }
-    .game-meta span { display: flex; align-items: center; gap: 4px; }
+    .share-btn:hover, .share-btn.on { color: var(--green); border-color: var(--green); }
+    .share-drawer {
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px;
+    }
+    .share-drawer.hidden { display: none !important; }
 
     .badge {
-      font-size: .65rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 6px;
-      display: inline-block;
-      margin-bottom: 14px;
+      font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+      display: inline-block; margin-bottom: 12px;
     }
     .badge-open     { background: rgba(57,224,115,.12); color: var(--green); border: 1px solid rgba(57,224,115,.3); }
     .badge-closed   { background: rgba(245,200,66,.12); color: var(--gold);  border: 1px solid rgba(245,200,66,.3); }
+    .badge-sorted   { background: rgba(91,164,245,.12); color: var(--blue);  border: 1px solid rgba(91,164,245,.3); }
     .badge-finished { background: rgba(77,102,85,.12);  color: var(--text-dim); border: 1px solid var(--border); }
 
-    .progress-wrap { margin-top: 4px; }
+    .game-meta {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 14px; font-size: .82rem; color: var(--text-dim);
+    }
+    .game-meta span { display: flex; align-items: center; gap: 4px; }
+
     .progress-bar-bg {
-      background: var(--card2);
-      border-radius: 4px;
-      height: 8px;
-      overflow: hidden;
-      margin-bottom: 6px;
+      background: var(--card2); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;
     }
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      background: var(--green);
-      transition: width .4s;
-    }
+    .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width .4s; }
     .progress-bar-fill.full { background: var(--red); }
-    .progress-text {
-      font-size: .78rem;
-      color: var(--text-dim);
-    }
+    .progress-text { font-size: .78rem; color: var(--text-dim); }
     .progress-text .num { color: var(--green); font-weight: 700; }
     .progress-text .num.full { color: var(--red); }
 
-    /* RSVP section */
+    /* ── RSVP ───────────────────────────────── */
     .rsvp-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px; margin-bottom: 16px;
     }
-
     .rsvp-separator {
-      text-align: center;
-      color: var(--text-dim);
-      font-size: .75rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin: 14px 0;
-      position: relative;
+      text-align: center; color: var(--text-dim); font-size: .75rem;
+      letter-spacing: 3px; text-transform: uppercase; margin: 14px 0; position: relative;
     }
-    .rsvp-separator::before,
-    .rsvp-separator::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 38%;
-      height: 1px;
-      background: var(--border);
+    .rsvp-separator::before, .rsvp-separator::after {
+      content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--border);
     }
     .rsvp-separator::before { left: 0; }
     .rsvp-separator::after  { right: 0; }
-
     .rsvp-confirmed {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(57,224,115,.07);
-      border: 1px solid rgba(57,224,115,.25);
-      border-radius: 11px;
-      padding: 14px;
-      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(57,224,115,.07); border: 1px solid rgba(57,224,115,.25);
+      border-radius: 11px; padding: 14px; margin-bottom: 12px;
     }
     .rsvp-confirmed-icon { font-size: 1.4rem; }
     .rsvp-confirmed-text { flex: 1; font-size: .9rem; }
     .rsvp-confirmed-text strong { color: var(--green); }
 
     .input {
-      width: 100%;
-      background: var(--card2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 11px 13px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: .92rem;
-      margin-bottom: 10px;
-      transition: border-color .15s;
+      width: 100%; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 13px; color: var(--text);
+      font-family: inherit; font-size: .92rem; margin-bottom: 10px; transition: border-color .15s;
     }
     .input:focus { outline: none; border-color: var(--green); }
     .input::placeholder { color: var(--text-dim); }
 
     .msg {
-      padding: 11px 13px; border-radius: 9px;
-      border: 1px solid var(--border); font-size: .85rem;
-      margin-bottom: 12px;
+      padding: 11px 13px; border-radius: 9px; border: 1px solid var(--border);
+      font-size: .85rem; margin-bottom: 12px;
     }
     .msg-err  { background: rgba(240,96,96,.09);  border-color: var(--red);   color: var(--red);   }
     .msg-ok   { background: rgba(57,224,115,.07); border-color: var(--green); color: var(--green); }
     .msg-warn { background: rgba(245,200,66,.07); border-color: var(--gold);  color: var(--gold);  }
 
-    /* Players list */
+    /* ── PLAYERS LIST ───────────────────────── */
     .player-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
     }
     .player-row:last-child { border-bottom: none; }
-    .player-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      object-fit: cover; flex-shrink: 0;
-      border: 1px solid var(--border);
-    }
+    .player-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
     .player-initials {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--card2);
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; font-weight: 700; color: var(--text-dim);
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%; background: var(--card2);
+      border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: var(--text-dim); flex-shrink: 0;
     }
     .player-name { flex: 1; font-size: .92rem; font-weight: 600; }
     .badge-guest {
-      font-size: .62rem;
-      color: var(--text-dim);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      padding: 1px 6px;
-      white-space: nowrap;
+      font-size: .62rem; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; white-space: nowrap;
     }
     .remove-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 4px 6px;
-      border-radius: 6px;
-      transition: color .15s;
-      line-height: 1;
+      background: none; border: none; color: var(--text-dim); cursor: pointer;
+      font-size: 1rem; padding: 4px 6px; border-radius: 6px; transition: color .15s; line-height: 1;
     }
     .remove-btn:hover { color: var(--red); }
+    .stars-tag { font-size: .7rem; color: var(--gold); flex-shrink: 0; }
+    .star-pick { display: flex; gap: 1px; margin-bottom: 10px; }
+    .star-pick span { font-size: 1.7rem; cursor: pointer; color: var(--text-dim); transition: color .1s; line-height: 1; }
+    .star-pick span.lit { color: var(--gold); }
 
-    /* Admin section */
+    /* ── ADMIN (COLLAPSIBLE) ────────────────── */
     .admin-section {
-      background: var(--surface);
-      border: 1px solid rgba(245,200,66,.25);
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 16px;
+      background: var(--surface); border: 1px solid rgba(245,200,66,.2);
+      border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
     }
-    .admin-section h2 {
-      font-family: Impact, 'Arial Black', sans-serif;
-      color: var(--gold);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-      font-size: 1.05rem;
+    .admin-toggle {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; background: transparent; border: none; cursor: pointer;
+      font-family: Impact, 'Arial Black', sans-serif; font-size: .95rem;
+      letter-spacing: 2px; text-transform: uppercase; color: var(--gold); transition: background .15s;
     }
-    .add-guest-form {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+    .admin-toggle:hover { background: rgba(245,200,66,.05); }
+    .admin-chevron { font-size: .7rem; transition: transform .2s; font-family: sans-serif; }
+    .admin-chevron.open { transform: rotate(180deg); }
+    .admin-body { padding: 0 20px 20px; }
+    .admin-body.hidden { display: none !important; }
+    .add-guest-form { display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-start; }
+    .add-guest-form textarea {
+      flex: 1; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 13px; color: var(--text);
+      font-family: inherit; font-size: .88rem; resize: vertical; min-height: 72px; line-height: 1.5;
     }
-    .add-guest-form input {
-      flex: 1;
-      background: var(--card2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 10px 13px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: .88rem;
-    }
-    .add-guest-form input:focus { outline: none; border-color: var(--gold); }
-    .add-guest-form input::placeholder { color: var(--text-dim); }
+    .add-guest-form textarea:focus { outline: none; border-color: var(--gold); }
+    .add-guest-form textarea::placeholder { color: var(--text-dim); }
     .btn-add-guest {
-      background: rgba(245,200,66,.12);
-      color: var(--gold);
-      border: 1px solid rgba(245,200,66,.3);
-      border-radius: 9px;
-      padding: 10px 16px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: .88rem;
-      white-space: nowrap;
-      transition: background .15s;
+      background: rgba(245,200,66,.12); color: var(--gold); border: 1px solid rgba(245,200,66,.3);
+      border-radius: 9px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: .88rem; white-space: nowrap; transition: background .15s;
     }
     .btn-add-guest:hover { background: rgba(245,200,66,.22); }
-
     .btn-status {
-      background: rgba(245,200,66,.1);
-      color: var(--gold);
-      border: 1px solid rgba(245,200,66,.3);
-      border-radius: 9px;
-      padding: 10px 16px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: .88rem;
-      transition: background .15s;
-      width: 100%;
+      background: rgba(245,200,66,.1); color: var(--gold); border: 1px solid rgba(245,200,66,.3);
+      border-radius: 9px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: .88rem; transition: background .15s; width: 100%;
     }
     .btn-status:hover { background: rgba(245,200,66,.2); }
+    .btn-finish {
+      background: rgba(240,96,96,.1); color: var(--red); border: 1px solid rgba(240,96,96,.3);
+      border-radius: 9px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: .88rem; transition: background .15s; width: 100%;
+    }
+    .btn-finish:hover { background: rgba(240,96,96,.2); }
 
     .loading {
       text-align: center; padding: 36px 0; color: var(--text-dim);
       font-size: .85rem; letter-spacing: 3px; text-transform: uppercase;
     }
 
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      color: var(--text-dim);
-      font-size: .8rem;
-      text-decoration: none;
-      margin-bottom: 14px;
-    }
-    .back-link:hover { color: var(--green); }
-
     .toast {
       position: fixed; bottom: 22px; left: 50%;
       transform: translateX(-50%) translateY(90px);
       background: var(--card2); border: 1px solid var(--border);
-      border-radius: 9px; padding: 11px 22px;
-      font-size: .88rem; z-index: 700;
-      transition: transform .28s ease; white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+      border-radius: 9px; padding: 11px 22px; font-size: .88rem; z-index: 700;
+      transition: transform .28s ease; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.5);
     }
     .toast.on { transform: translateX(-50%) translateY(0); }
+
+    /* ── SORTEIO INLINE ────────────────────── */
+    .sorteio-input {
+      width: 100%; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 12px; color: var(--text);
+      font-family: inherit; font-size: .92rem; outline: none; transition: border-color .15s;
+    }
+    .sorteio-input:focus { border-color: var(--green); }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .mode-btn {
+      padding: 12px 10px; border-radius: 9px; border: 2px solid var(--border);
+      background: var(--card); color: var(--text-dim); cursor: pointer;
+      font-family: inherit; font-size: .82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px; transition: all .18s; text-align: center;
+    }
+    .mode-btn.on { border-color: var(--green); color: var(--green); background: rgba(57,224,115,.07); }
+    .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .team-card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); animation: rise .35s ease both; }
+    @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    .team-hdr { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .team-title { font-family: Impact, 'Arial Black', sans-serif; font-size: .95rem; letter-spacing: 1px; text-transform: uppercase; }
+    .team-body { background: var(--card); padding: 8px 12px; }
+    .t-player { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .t-player:last-child { border-bottom: none; }
+    .p-badge { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; font-size: .58rem; flex-shrink: 0; }
+    .p-badge.cap { background: #f5c842; color: #000; font-weight: 900; }
+    .p-badge.gk  { background: #0e2040; color: #5ba4f5; font-weight: 700; }
+    .p-name { flex: 1; font-size: .86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leftover { background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 12px 14px; margin-top: 10px; }
+    .leftover h3 { font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--red); margin-bottom: 6px; }
+    .act-row { display: flex; gap: 8px; }
 
     .hidden { display: none !important; }
 
     @media (max-width: 460px) {
-      .panel, .rsvp-section, .admin-section, .game-header-card { padding: 16px; }
+      .panel, .rsvp-section, .game-header-card { padding: 16px; }
+      .admin-toggle { padding: 14px 16px; }
+      .admin-body { padding: 0 16px 16px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <span class="logo-ball">⚽</span>
-  <h1>Alto Valor FC</h1>
-  <p>Detalhes do Jogo</p>
-</header>
-
-<div class="user-bar hidden" id="userBar">
-  <img class="user-avatar" id="userAvatar" src="" alt="">
-  <span class="user-name" id="userName"></span>
-  <a href="/jogos.html" class="bar-link">Jogos</a>
-  <a href="/api/auth/logout" class="bar-link">Sair</a>
+<!-- ══════════════════════════ TOPBAR ═════════════════════════════════════ -->
+<div class="topbar">
+  <a href="/" class="topbar-back">&#8592; Jogos</a>
+  <span class="topbar-brand">⚽ Alto Valor FC</span>
+  <div class="topbar-right hidden" id="topbarUser">
+    <img class="topbar-avatar" id="topbarAvatar" src="" alt="">
+    <a href="/api/auth/logout" class="topbar-logout">Sair</a>
+  </div>
 </div>
 
+<!-- ══════════════════════════ MAIN ══════════════════════════════════════ -->
 <div class="container">
-  <a href="/jogos.html" class="back-link">&#8592; Voltar para Jogos</a>
   <div id="root">
     <div class="panel"><div class="loading">carregando...</div></div>
   </div>
@@ -424,10 +355,30 @@
 <script>
 'use strict';
 
+const PALETTES = [
+  { bg:'#0d2218', accent:'#39e073', name:'Time 1'  },
+  { bg:'#0c1a36', accent:'#5ba4f5', name:'Time 2'  },
+  { bg:'#2e0e0e', accent:'#f06060', name:'Time 3'  },
+  { bg:'#2e1a08', accent:'#fb923c', name:'Time 4'  },
+  { bg:'#1e0d36', accent:'#c084fc', name:'Time 5'  },
+  { bg:'#0a2630', accent:'#22d3ee', name:'Time 6'  },
+  { bg:'#2a2600', accent:'#f5c842', name:'Time 7'  },
+  { bg:'#1a2a00', accent:'#a3e635', name:'Time 8'  },
+  { bg:'#2e0c1e', accent:'#f472b6', name:'Time 9'  },
+  { bg:'#1e1e1e', accent:'#94a3b8', name:'Time 10' },
+];
+
 const gameId = new URLSearchParams(location.search).get('id');
 let currentUser = null;
-let gameData = null;        // { game, confirmations, myConfirmationId }
-let isAdmin = false;
+let gameData    = null;
+let isAdmin     = false;
+let selectionMode = false;
+let selectedIds   = new Set();
+let shareOpen    = false;
+let adminOpen    = false;
+let sorteioState = null;
+let rsvpStars    = 3;
+let sortedNames  = new Set();
 
 function esc(s) {
   return String(s)
@@ -454,6 +405,7 @@ function formatDate(dateStr) {
 function statusLabel(status) {
   if (status === 'open')     return ['Aberto',    'badge-open'];
   if (status === 'closed')   return ['Fechado',   'badge-closed'];
+  if (status === 'sorted')   return ['Sorteado',  'badge-sorted'];
   if (status === 'finished') return ['Encerrado', 'badge-finished'];
   return [status, 'badge-finished'];
 }
@@ -462,51 +414,46 @@ function initials(name) {
   return (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-function renderUserBar(user) {
-  const bar    = document.getElementById('userBar');
-  const avatar = document.getElementById('userAvatar');
-  const name   = document.getElementById('userName');
-  if (user) {
-    avatar.src = user.picture || '';
-    avatar.style.display = user.picture ? '' : 'none';
-    name.textContent = user.name || user.email || '';
-    bar.classList.remove('hidden');
-  }
+function renderTopbar(user) {
+  if (!user) return;
+  const el     = document.getElementById('topbarUser');
+  const avatar = document.getElementById('topbarAvatar');
+  avatar.src   = user.picture || '';
+  avatar.style.display = user.picture ? '' : 'none';
+  el.classList.remove('hidden');
 }
 
-// Guest confirmation stored in localStorage as { id, name }
-function getGuestConfirmation(gid) {
-  try { return JSON.parse(localStorage.getItem('guest_' + gid)); } catch { return null; }
-}
-function setGuestConfirmation(gid, id, name) {
-  localStorage.setItem('guest_' + gid, JSON.stringify({ id, name }));
-}
-function clearGuestConfirmation(gid) {
-  localStorage.removeItem('guest_' + gid);
-}
+function getGuestConfirmation(gid)       { try { return JSON.parse(localStorage.getItem('guest_' + gid)); } catch { return null; } }
+function setGuestConfirmation(gid, id, n) { localStorage.setItem('guest_' + gid, JSON.stringify({ id, name: n })); }
+function clearGuestConfirmation(gid)     { localStorage.removeItem('guest_' + gid); }
 
+/* ── RENDER ───────────────────────────────────────────────────────────── */
 function renderPage() {
   const { game, confirmations, myConfirmationId } = gameData;
   const root = document.getElementById('root');
 
-  const count = confirmations.length;
-  const max = game.max_players || 24;
-  const pct = Math.min(100, Math.round(count / max * 100));
-  const isFull = count >= max;
+  const count    = confirmations.length;
+  const max      = game.max_players || 24;
+  const pct      = Math.min(100, Math.round(count / max * 100));
+  const isFull   = count >= max;
   const isClosed = game.status !== 'open';
   const [statusText, statusCls] = statusLabel(game.status);
 
-  // Build header card
+  const shareMsg = `⚽ ${game.title}\n📅 ${formatDate(game.game_date)} ⏰ ${game.game_time}${game.location ? '\n📍 ' + game.location : ''}\n\nConfirme sua presença: ${location.href}`;
+
   let html = `
   <div class="game-header-card">
-    <div class="game-header-title">${esc(game.title)}</div>
+    <div class="game-header-top">
+      <div class="game-header-title">${esc(game.title)}</div>
+      <button class="share-btn${shareOpen ? ' on' : ''}" onclick="toggleShare()">📤</button>
+    </div>
     <span class="badge ${statusCls}">${statusText}</span>
     <div class="game-meta">
       <span>📅 ${esc(formatDate(game.game_date))}</span>
       <span>⏰ ${esc(game.game_time)}</span>
       ${game.location ? `<span>📍 ${esc(game.location)}</span>` : ''}
     </div>
-    <div class="progress-wrap">
+    <div>
       <div class="progress-bar-bg">
         <div class="progress-bar-fill${isFull ? ' full' : ''}" style="width:${pct}%"></div>
       </div>
@@ -514,45 +461,81 @@ function renderPage() {
         <span class="num${isFull ? ' full' : ''}">${count}</span> de ${max} vagas confirmadas
       </div>
     </div>
+    <div class="share-drawer${shareOpen ? '' : ' hidden'}">
+      <button class="btn btn-ghost" style="flex:1;padding:9px;font-size:.82rem" onclick="copyGameLink()">📋 Copiar link</button>
+      <a href="https://wa.me/?text=${encodeURIComponent(shareMsg)}" target="_blank" rel="noopener"
+        class="btn btn-ghost" style="flex:1;padding:9px;font-size:.82rem;text-decoration:none;display:flex;align-items:center;justify-content:center">
+        📲 WhatsApp
+      </a>
+    </div>
   </div>`;
 
-  // RSVP section
-  html += `<div class="rsvp-section" id="rsvpSection">`;
+  // RSVP
+  html += `<div class="rsvp-section">`;
   html += renderRsvp(game, myConfirmationId, isFull, isClosed);
   html += `</div>`;
 
   // Players list
-  html += `
-  <div class="panel">
-    <h2>${count} Confirmado${count !== 1 ? 's' : ''}</h2>
-    <div id="playersList">`;
-  html += renderPlayersList(confirmations);
-  html += `</div></div>`;
+  const selCount = selectionMode ? selectedIds.size : count;
+  const panelTitle = selectionMode
+    ? `${selCount} presente${selCount !== 1 ? 's' : ''} selecionado${selCount !== 1 ? 's' : ''}`
+    : `${count} Confirmado${count !== 1 ? 's' : ''}`;
 
-  // Admin section
-  if (isAdmin) {
-    const toggleLabel = game.status === 'open' ? 'Fechar Vagas' : 'Abrir Vagas';
-    const toggleStatus = game.status === 'open' ? 'closed' : 'open';
+  html += `<div class="panel"><h2>${panelTitle}</h2>`;
+  if (selectionMode) {
     html += `
-    <div class="admin-section" id="adminSection">
-      <h2>Painel Admin</h2>
-      <div class="add-guest-form">
-        <input type="text" id="adminGuestName" placeholder="Nome do convidado" maxlength="50">
-        <button class="btn-add-guest" onclick="adminAddGuest()">Adicionar</button>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:.8rem" onclick="selectAll(true)">Marcar todos</button>
+      <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:.8rem" onclick="selectAll(false)">Desmarcar todos</button>
+    </div>`;
+  }
+  html += `<div id="playersList">${renderPlayersList(confirmations)}</div>`;
+
+  if (currentUser && count > 0) {
+    if (selectionMode) {
+      html += `
+      <button class="btn btn-primary" style="margin-top:16px" onclick="sortearSelecionados()" ${selCount === 0 ? 'disabled' : ''}>
+        ⚽ Sortear${selCount > 0 ? ' (' + selCount + ')' : ''}
+      </button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="cancelSelection()">Cancelar</button>`;
+    } else if (!sorteioState) {
+      html += `<button class="btn btn-ghost" style="margin-top:16px;width:100%" onclick="enableSelection()">☑ Selecionar quem chegou</button>`;
+    }
+  }
+  html += `</div>`;
+
+  // Admin (collapsible)
+  if (isAdmin && game.status !== 'finished') {
+    const toggleLabel  = game.status === 'open' ? 'Fechar Vagas' : 'Abrir Vagas';
+    const toggleStatus = game.status === 'open' ? 'closed' : 'open';
+    const showToggle   = game.status === 'open' || game.status === 'closed';
+    html += `
+    <div class="admin-section">
+      <button class="admin-toggle" onclick="toggleAdmin()">
+        <span>⚙️ Gerenciar jogo</span>
+        <span class="admin-chevron${adminOpen ? ' open' : ''}">▼</span>
+      </button>
+      <div class="admin-body${adminOpen ? '' : ' hidden'}">
+        <div class="add-guest-form">
+          <textarea id="adminGuestName" placeholder="Um nome por linha:&#10;João&#10;Pedro&#10;Carlos"></textarea>
+          <button class="btn-add-guest" onclick="adminAddGuest()">Adicionar</button>
+        </div>
+        <div id="adminMsg"></div>
+        ${showToggle ? `<button class="btn-status" style="margin-bottom:8px" onclick="toggleStatus('${toggleStatus}')">${toggleLabel}</button>` : ''}
+        <button class="btn-finish" onclick="finishGame()">🏁 Encerrar jogo e aplicar notas</button>
       </div>
-      <div id="adminMsg"></div>
-      <button class="btn-status" onclick="toggleStatus('${toggleStatus}')">${toggleLabel}</button>
     </div>`;
   }
 
-  root.innerHTML = html;
+  if (sorteioState) html += renderSorteioSection();
 
-  // Attach event listeners after DOM update
-  attachRsvpListeners();
+  root.innerHTML = html;
 }
 
 function renderRsvp(game, myConfirmationId, isFull, isClosed) {
-  // Closed or finished
+  if (game.status === 'sorted') {
+    return `<div class="msg" style="background:rgba(91,164,245,.08);border-color:rgba(91,164,245,.35);color:var(--blue)">✅ Times já foram sorteados para este jogo.</div>`;
+  }
   if (game.status === 'finished') {
     return `<div class="msg msg-warn">Este jogo foi encerrado.</div>`;
   }
@@ -563,7 +546,6 @@ function renderRsvp(game, myConfirmationId, isFull, isClosed) {
     return `<div class="msg msg-warn">Vagas esgotadas para este jogo.</div>`;
   }
 
-  // Logged-in user
   if (currentUser) {
     if (myConfirmationId) {
       return `
@@ -571,12 +553,16 @@ function renderRsvp(game, myConfirmationId, isFull, isClosed) {
           <span class="rsvp-confirmed-icon">✓</span>
           <div class="rsvp-confirmed-text">Presença confirmada como <strong>${esc(currentUser.name)}</strong></div>
         </div>
-        <button class="btn btn-ghost" id="cancelBtn" onclick="cancelConfirmation('${esc(myConfirmationId)}', false)">Cancelar presença</button>`;
+        <button class="btn btn-ghost" onclick="cancelConfirmation('${esc(myConfirmationId)}', false)">Cancelar presença</button>`;
     }
-    return `<button class="btn btn-primary" id="confirmBtn" onclick="confirmAsUser()">✓ Confirmar presença</button>`;
+    return `
+      <p style="font-size:.74rem;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Sua nota (para balanceamento)</p>
+      <div class="star-pick" id="starPick">
+        ${[1,2,3,4,5].map(n => `<span class="${n <= rsvpStars ? 'lit' : ''}" onclick="setRsvpStars(${n})">&#9733;</span>`).join('')}
+      </div>
+      <button class="btn btn-primary" id="confirmBtn" onclick="confirmAsUser()">&#10003; Confirmar presença</button>`;
   }
 
-  // Not logged in — check localStorage for guest confirmation
   const guest = getGuestConfirmation(gameId);
   if (guest) {
     return `
@@ -584,7 +570,7 @@ function renderRsvp(game, myConfirmationId, isFull, isClosed) {
         <span class="rsvp-confirmed-icon">✓</span>
         <div class="rsvp-confirmed-text">Confirmado como convidado: <strong>${esc(guest.name)}</strong></div>
       </div>
-      <button class="btn btn-ghost" id="cancelGuestBtn" onclick="cancelConfirmation('${esc(guest.id)}', true)">Cancelar presença</button>`;
+      <button class="btn btn-ghost" onclick="cancelConfirmation('${esc(guest.id)}', true)">Cancelar presença</button>`;
   }
 
   return `
@@ -602,40 +588,58 @@ function renderPlayersList(confirmations) {
   return confirmations.map(c => {
     const name = c.user_id ? (c.user_name || 'Usuário') : (c.guest_name || 'Convidado');
     const avatarHtml = c.user_picture
-      ? `<img class="player-avatar" src="${esc(c.user_picture)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-      + `<div class="player-initials" style="display:none">${esc(initials(name))}</div>`
+      ? `<img class="player-avatar" src="${esc(c.user_picture)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="player-initials" style="display:none">${esc(initials(name))}</div>`
       : `<div class="player-initials">${esc(initials(name))}</div>`;
-
     const guestBadge = !c.user_id ? `<span class="badge-guest">Convidado</span>` : '';
-    const removeBtn = isAdmin
-      ? `<button class="remove-btn" onclick="adminRemove('${esc(c.id)}')" title="Remover">&#10005;</button>`
-      : '';
 
-    return `<div class="player-row" id="row-${esc(c.id)}">
-      ${avatarHtml}
-      <span class="player-name">${esc(name)}</span>
-      ${guestBadge}
-      ${removeBtn}
-    </div>`;
+    if (selectionMode) {
+      if (sortedNames.has(name)) {
+        return `<div class="player-row" style="opacity:.3">
+          <div style="width:18px;height:18px;flex-shrink:0"></div>
+          ${avatarHtml}
+          <span class="player-name">${esc(name)}</span>
+          <span class="badge-guest">sorteado</span>
+        </div>`;
+      }
+      const checked = selectedIds.has(c.id);
+      return `<div class="player-row" onclick="togglePlayer('${esc(c.id)}')" style="cursor:pointer;${checked ? '' : 'opacity:.4'}">
+        <input type="checkbox" ${checked ? 'checked' : ''} onclick="event.stopPropagation();togglePlayer('${esc(c.id)}')" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0">
+        ${avatarHtml}
+        <span class="player-name">${esc(name)}</span>${guestBadge}
+      </div>`;
+    }
+
+    const starsHtml  = (c.stars != null) ? `<span class="stars-tag">&#9733; ${c.stars}</span>` : '';
+    const removeBtn  = isAdmin ? `<button class="remove-btn" onclick="adminRemove('${esc(c.id)}')" title="Remover">&#10005;</button>` : '';
+    return `<div class="player-row">${avatarHtml}<span class="player-name">${esc(name)}</span>${starsHtml}${guestBadge}${removeBtn}</div>`;
   }).join('');
 }
 
-function attachRsvpListeners() {
-  // Nothing extra needed — onclick handlers are inline
+/* ── TOGGLE ───────────────────────────────────────────────────────────── */
+function toggleShare() { shareOpen = !shareOpen; renderPage(); }
+function toggleAdmin() { adminOpen = !adminOpen; renderPage(); }
+
+function copyGameLink() {
+  navigator.clipboard.writeText(location.href)
+    .then(() => toast('✅ Link copiado!'))
+    .catch(() => toast('❌ Não foi possível copiar'));
 }
 
+function setRsvpStars(n) {
+  rsvpStars = n;
+  const pick = document.getElementById('starPick');
+  if (pick) pick.querySelectorAll('span').forEach((s, i) => s.classList.toggle('lit', i < n));
+}
+
+/* ── RSVP ACTIONS ─────────────────────────────────────────────────────── */
 async function confirmAsUser() {
   const btn = document.getElementById('confirmBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Confirmando...'; }
   try {
-    const res = await fetch('/api/confirmations', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ gameId }),
-    });
+    const res  = await fetch('/api/confirmations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ gameId, stars: rsvpStars }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
-    toast('Presenca confirmada!');
+    toast('Presença confirmada!');
     await reloadGame();
   } catch (e) {
     toast('Erro: ' + e.message);
@@ -646,23 +650,16 @@ async function confirmAsUser() {
 async function confirmAsGuest() {
   const nameEl = document.getElementById('guestNameInput');
   const msgEl  = document.getElementById('guestMsg');
-  const name = nameEl ? nameEl.value.trim() : '';
-  if (!name) {
-    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite seu nome.'; }
-    return;
-  }
+  const name   = nameEl ? nameEl.value.trim() : '';
+  if (!name) { if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite seu nome.'; } return; }
   const btn = document.getElementById('guestConfirmBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Confirmando...'; }
   try {
-    const res = await fetch('/api/confirmations', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ gameId, guestName: name }),
-    });
+    const res  = await fetch('/api/confirmations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ gameId, guestName: name }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
     setGuestConfirmation(gameId, data.id, data.guestName || name);
-    toast('Presenca confirmada!');
+    toast('Presença confirmada!');
     await reloadGame();
   } catch (e) {
     toast('Erro: ' + e.message);
@@ -673,80 +670,316 @@ async function confirmAsGuest() {
 async function cancelConfirmation(id, isGuest) {
   if (!confirm('Cancelar presença?')) return;
   try {
-    const res = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
+    const res  = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
     if (isGuest) clearGuestConfirmation(gameId);
-    toast('Presenca cancelada.');
+    toast('Presença cancelada.');
     await reloadGame();
-  } catch (e) {
-    toast('Erro: ' + e.message);
-  }
+  } catch (e) { toast('Erro: ' + e.message); }
 }
 
+/* ── ADMIN ACTIONS ────────────────────────────────────────────────────── */
 async function adminRemove(id) {
   if (!confirm('Remover esta confirmação?')) return;
   try {
-    const res = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
+    const res  = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
     toast('Removido.');
     await reloadGame();
-  } catch (e) {
-    toast('Erro: ' + e.message);
-  }
+  } catch (e) { toast('Erro: ' + e.message); }
 }
 
 async function adminAddGuest() {
   const nameEl = document.getElementById('adminGuestName');
   const msgEl  = document.getElementById('adminMsg');
-  const name = nameEl ? nameEl.value.trim() : '';
-  if (!name) {
-    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite o nome.'; }
-    return;
+  const names  = (nameEl ? nameEl.value : '').split('\n').map(n => n.trim()).filter(n => n.length > 0).map(n => n.slice(0, 50));
+  if (!names.length) { if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Digite ao menos um nome.'; } return; }
+
+  const btn = document.querySelector('.btn-add-guest');
+  if (btn) { btn.disabled = true; btn.textContent = 'Adicionando...'; }
+
+  let added = 0;
+  const errs = [];
+  for (const name of names) {
+    try {
+      const res  = await fetch('/api/confirmations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ gameId, guestName: name }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro');
+      added++;
+    } catch (e) { errs.push(`${name}: ${e.message}`); }
   }
-  try {
-    const res = await fetch('/api/confirmations', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ gameId, guestName: name }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erro');
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Adicionar'; }
+  if (added > 0) {
     if (nameEl) nameEl.value = '';
-    if (msgEl) { msgEl.className = 'msg msg-ok'; msgEl.textContent = name + ' adicionado.'; setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 2000); }
+    const summary = added === 1 ? `${names[0]} adicionado.` : `${added} jogadores adicionados.`;
+    if (msgEl) { msgEl.className = 'msg msg-ok'; msgEl.textContent = summary; setTimeout(() => { if (msgEl) msgEl.className = msgEl.textContent = ''; }, 3000); }
     await reloadGame();
-  } catch (e) {
-    if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = 'Erro: ' + e.message; }
   }
+  if (errs.length) { if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = errs.join(' | '); } }
 }
 
 async function toggleStatus(newStatus) {
   try {
-    const res = await fetch('/api/games/' + gameId, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
-    });
+    const res  = await fetch('/api/games/' + gameId, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
     toast('Status atualizado.');
     await reloadGame();
-  } catch (e) {
-    toast('Erro: ' + e.message);
-  }
+  } catch (e) { toast('Erro: ' + e.message); }
 }
 
+async function finishGame() {
+  if (!confirm('Encerrar o jogo? As notas dos jogadores serão aplicadas aos perfis. Esta ação não pode ser desfeita.')) return;
+  try {
+    const res  = await fetch('/api/games/' + gameId, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: 'finished' }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    toast('✅ Jogo encerrado e notas aplicadas!');
+    await reloadGame();
+  } catch (e) { toast('Erro: ' + e.message); }
+}
+
+/* ── SELECTION MODE ───────────────────────────────────────────────────── */
+function enableSelection() {
+  selectionMode = true;
+  selectedIds = new Set(
+    gameData.confirmations
+      .filter(c => !sortedNames.has((c.user_id ? c.user_name : c.guest_name) || ''))
+      .map(c => c.id)
+  );
+  renderPage();
+}
+function cancelSelection()  { selectionMode = false; selectedIds = new Set(); renderPage(); }
+function selectAll(val) {
+  selectedIds = val
+    ? new Set(gameData.confirmations
+        .filter(c => !sortedNames.has((c.user_id ? c.user_name : c.guest_name) || ''))
+        .map(c => c.id))
+    : new Set();
+  renderPage();
+}
+function togglePlayer(id)   { selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id); renderPage(); }
+
+async function sortearSelecionados() {
+  const selected = gameData.confirmations.filter(c => selectedIds.has(c.id));
+  const players  = selected
+    .map(c => {
+      const name = (c.user_id ? c.user_name : c.guest_name) || '';
+      return name ? { name, stars: c.stars != null ? c.stars : null, isGK: false } : null;
+    })
+    .filter(Boolean);
+  if (!players.length) return;
+
+  const total    = players.length;
+  const numTeams = Math.max(2, Math.min(Math.floor(total / 2), 5));
+  const ppTeam   = Math.floor(total / numTeams);
+
+  sorteioState  = { players, config: { numTeams, ppTeam }, mode: 'random', opts: { cap: false, gk: false }, teams: null, leftover: [], voteSession: null };
+  selectionMode = false;
+  selectedIds   = new Set();
+
+  // Fill missing stars: first try players API (vote history), then default 3
+  try {
+    const res  = await fetch('/api/players');
+    const data = await res.json();
+    const map  = Object.fromEntries((data.players || []).map(p => [p.name, p]));
+    sorteioState.players.forEach(p => {
+      if (p.stars == null) {
+        const prof = map[p.name];
+        p.stars = (prof && prof.vote_count > 0) ? Math.round(prof.avg_rating) : 3;
+      }
+    });
+  } catch {
+    sorteioState.players.forEach(p => { if (p.stars == null) p.stars = 3; });
+  }
+
+  renderPage();
+  setTimeout(() => document.getElementById('sorteioSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+/* ── SORTEIO INLINE ───────────────────────────────────────────────────── */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function runBuildTeams() {
+  const { players, config: { numTeams, ppTeam }, mode, opts } = sorteioState;
+  const teams = Array.from({ length: numTeams }, (_, i) => ({ ...PALETTES[i % PALETTES.length], players: [], totalStars: 0 }));
+  const slots = Array(numTeams).fill(ppTeam);
+  const add   = (ti, p, extra = {}) => { if (slots[ti] <= 0) return; teams[ti].players.push({ ...p, ...extra }); teams[ti].totalStars += p.stars; slots[ti]--; };
+
+  let gkPool    = opts.gk ? players.filter(p => p.isGK) : [];
+  let fieldPool = opts.gk ? players.filter(p => !p.isGK) : [...players];
+  shuffle(gkPool).forEach((gk, i) => i < numTeams ? add(i, gk, { isGK: true }) : fieldPool.push(gk));
+
+  if (opts.cap) {
+    const sorted = [...fieldPool].sort((a, b) => b.stars - a.stars);
+    const caps   = sorted.splice(0, numTeams);
+    fieldPool    = sorted;
+    (mode === 'balanced' ? caps : shuffle(caps)).forEach((c, i) => add(i, c, { isCaptain: true }));
+  }
+
+  const pool     = shuffle(fieldPool);
+  const total    = slots.reduce((a, b) => a + b, 0);
+  const dist     = pool.slice(0, total);
+  const leftover = pool.slice(total);
+
+  if (mode === 'balanced') {
+    [...dist].sort((a, b) => b.stars - a.stars).forEach(p => {
+      let best = -1, minS = Infinity;
+      for (let i = 0; i < numTeams; i++) if (slots[i] > 0 && teams[i].totalStars < minS) { minS = teams[i].totalStars; best = i; }
+      if (best >= 0) add(best, p);
+    });
+  } else {
+    let pi = 0;
+    for (let ti = 0; ti < numTeams; ti++) while (slots[ti] > 0 && pi < dist.length) add(ti, dist[pi++]);
+  }
+  return { teams, leftover };
+}
+
+function setSorteioMode(m)   { if (sorteioState) { sorteioState.mode = m; renderPage(); } }
+function cancelarSorteio()   { sorteioState = null; renderPage(); }
+
+function updateSorteioConfig() {
+  if (!sorteioState) return;
+  sorteioState.config.numTeams = Math.max(2, parseInt(document.getElementById('sNumTeams')?.value) || 2);
+  sorteioState.config.ppTeam   = Math.max(1, parseInt(document.getElementById('sPpTeam')?.value)   || 5);
+}
+
+function executarSorteio() {
+  if (!sorteioState) return;
+  updateSorteioConfig();
+  const { teams, leftover } = runBuildTeams();
+  sorteioState.teams       = teams;
+  sorteioState.leftover    = leftover;
+  sorteioState.voteSession = null;
+  teams.forEach(t => t.players.forEach(p => sortedNames.add(p.name)));
+  renderPage();
+  setTimeout(() => document.getElementById('sorteioSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function renderSorteioSection() {
+  const { players, config, mode, teams, leftover, voteSession } = sorteioState;
+
+  if (teams) {
+    let html = `<div class="panel" id="sorteioSection"><h2>🏆 Times Sorteados</h2><div class="teams-grid">`;
+    html += teams.map((t, ti) => `
+      <div class="team-card" style="animation-delay:${ti * .07}s">
+        <div class="team-hdr" style="background:${t.bg};border-bottom:2px solid ${t.accent}">
+          <span class="team-title" style="color:${t.accent}">${esc(t.name)}</span>
+          <span style="color:${t.accent};opacity:.8;font-size:.72rem">⭐ ${t.totalStars}</span>
+        </div>
+        <div class="team-body">${t.players.map(p => {
+          let b = '<div class="p-badge">#</div>';
+          if (p.isCaptain) b = '<div class="p-badge cap">C</div>';
+          else if (p.isGK) b = '<div class="p-badge gk">GK</div>';
+          return `<div class="t-player">${b}<span class="p-name">${esc(p.name)}</span></div>`;
+        }).join('')}</div>
+      </div>`).join('');
+    html += `</div>`;
+
+    if (leftover.length) {
+      html += `<div class="leftover"><h3>⚠️ Ficaram de fora (${leftover.length})</h3>${leftover.map(p => `<div style="font-size:.86rem;padding:2px 0;color:var(--text-dim)">• ${esc(p.name)}</div>`).join('')}</div>`;
+    }
+
+    html += `<div class="act-row" style="margin-top:14px">
+      <button class="btn btn-ghost" style="flex:1" onclick="executarSorteio()">🔄 Ressortear</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="copyTeams()">📋 Copiar</button>
+      ${!voteSession ? `<button class="btn btn-ghost" style="flex:1" onclick="openVoting()">🗳️ Votação</button>` : ''}
+    </div>`;
+
+    if (voteSession) {
+      const voteUrl = `${location.origin}/votar?s=${encodeURIComponent(voteSession.id)}`;
+      html += `
+      <div style="margin-top:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:9px">
+        <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:6px">Link de votação:</div>
+        <div style="font-family:monospace;font-size:.76rem;color:var(--green);word-break:break-all;margin-bottom:8px">${esc(voteUrl)}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:.8rem" onclick="copyVoteLink('${esc(voteUrl)}')">📋 Copiar</button>
+          <a href="https://wa.me/?text=${encodeURIComponent('🗳️ Avalie os jogadores!\n' + voteUrl)}" target="_blank" rel="noopener"
+            class="btn btn-ghost" style="flex:1;padding:8px;font-size:.8rem;text-decoration:none;display:flex;align-items:center;justify-content:center">📲 WhatsApp</a>
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  return `
+  <div class="panel" id="sorteioSection">
+    <h2>⚽ Sortear — ${players.length} jogadores</h2>
+    <div class="mode-grid">
+      <button class="mode-btn${mode === 'random'   ? ' on' : ''}" onclick="setSorteioMode('random')">🎲 Aleatório</button>
+      <button class="mode-btn${mode === 'balanced' ? ' on' : ''}" onclick="setSorteioMode('balanced')">⚖️ Balanceado</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1">
+        <label style="font-size:.72rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:5px">Nº de times</label>
+        <input type="number" class="sorteio-input" id="sNumTeams" value="${config.numTeams}" min="2" max="10" oninput="updateSorteioConfig()">
+      </div>
+      <div style="flex:1">
+        <label style="font-size:.72rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:5px">Jogadores/time</label>
+        <input type="number" class="sorteio-input" id="sPpTeam" value="${config.ppTeam}" min="1" max="20" oninput="updateSorteioConfig()">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="executarSorteio()">⚽ SORTEAR AGORA</button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="cancelarSorteio()">← Voltar</button>
+  </div>`;
+}
+
+async function openVoting() {
+  if (!sorteioState?.teams) return;
+  const seen = new Set();
+  const payload = [];
+  for (const t of sorteioState.teams) {
+    for (const p of t.players) {
+      if (seen.has(p.name)) continue;
+      seen.add(p.name);
+      payload.push({ id: p.name, name: p.name });
+    }
+  }
+  toast('⏳ Gerando link...');
+  try {
+    const res  = await fetch('/api/sessions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ players: payload }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+    sorteioState.voteSession = data;
+    renderPage();
+    setTimeout(() => document.getElementById('sorteioSection')?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+  } catch (e) { toast('❌ ' + e.message); }
+}
+
+function copyTeams() {
+  if (!sorteioState?.teams) return;
+  const txt = sorteioState.teams.map(t =>
+    `${t.name}\n${t.players.map(p => (p.isCaptain ? '👑 ' : p.isGK ? '🧤 ' : '   ') + p.name).join('\n')}`
+  ).join('\n\n');
+  navigator.clipboard.writeText(`⚽ Alto Valor FC\n${'─'.repeat(22)}\n${txt}`)
+    .then(() => toast('✅ Copiado!'))
+    .catch(() => toast('❌ Não foi possível copiar'));
+}
+
+function copyVoteLink(url) {
+  navigator.clipboard.writeText(url)
+    .then(() => toast('✅ Link copiado!'))
+    .catch(() => toast('❌ Não foi possível copiar'));
+}
+
+/* ── RELOAD + BOOT ────────────────────────────────────────────────────── */
 async function reloadGame() {
   try {
-    const res = await fetch('/api/games/' + gameId);
+    const res  = await fetch('/api/games/' + gameId);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');
     gameData = data;
     renderPage();
-  } catch (e) {
-    toast('Erro ao recarregar: ' + e.message);
-  }
+  } catch (e) { toast('Erro ao recarregar: ' + e.message); }
 }
 
 async function boot() {
@@ -755,16 +988,15 @@ async function boot() {
     return;
   }
 
-  // Load auth and game in parallel
   const [meRes, gameRes] = await Promise.all([
     fetch('/api/auth/me').then(r => r.json()).catch(() => ({ user: null })),
     fetch('/api/games/' + gameId).then(r => r.json()).catch(() => null),
   ]);
 
   currentUser = meRes.user;
-  isAdmin = !!(currentUser && currentUser.is_admin);
+  isAdmin     = !!(currentUser && currentUser.is_admin);
 
-  if (currentUser) renderUserBar(currentUser);
+  if (currentUser) renderTopbar(currentUser);
 
   if (!gameRes || !gameRes.game) {
     document.getElementById('root').innerHTML = '<div class="panel"><p style="color:var(--red)">Jogo não encontrado.</p></div>';

@@ -79,15 +79,16 @@ CREATE TABLE IF NOT EXISTS sorteio_history (
 CREATE INDEX IF NOT EXISTS idx_sorteio_history_owner ON sorteio_history(owner_id);
 
 CREATE TABLE IF NOT EXISTS games (
-  id          TEXT PRIMARY KEY,
-  owner_id    TEXT NOT NULL,
-  title       TEXT NOT NULL,
-  game_date   TEXT NOT NULL,
-  game_time   TEXT NOT NULL DEFAULT '21:00',
-  location    TEXT,
-  max_players INTEGER NOT NULL DEFAULT 24,
-  status      TEXT NOT NULL DEFAULT 'open',
-  created_at  INTEGER NOT NULL,
+  id                TEXT PRIMARY KEY,
+  owner_id          TEXT NOT NULL,
+  title             TEXT NOT NULL,
+  game_date         TEXT NOT NULL,
+  game_time         TEXT NOT NULL DEFAULT '21:00',
+  location          TEXT,
+  max_players       INTEGER NOT NULL DEFAULT 24,
+  status            TEXT NOT NULL DEFAULT 'open',
+  created_at        INTEGER NOT NULL,
+  rating_applied_at INTEGER DEFAULT NULL,
   FOREIGN KEY (owner_id) REFERENCES users(id)
 );
 
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS game_confirmations (
   guest_name   TEXT,
   confirmed_at INTEGER NOT NULL,
   added_by     TEXT,
+  stars        INTEGER DEFAULT NULL,
   FOREIGN KEY (game_id) REFERENCES games(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );

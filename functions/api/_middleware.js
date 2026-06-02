@@ -10,6 +10,7 @@ export async function onRequest(ctx) {
 
   // Auth-free routes
   if (path.startsWith("/api/auth/")) return ctx.next();
+  if (path === "/api/dev-login") return ctx.next();
   if (path.startsWith("/api/games") || path.startsWith("/api/confirmations")) return ctx.next();
 
   // All other /api/* require login

@@ -1,0 +1,1 @@
+ALTER TABLE game_confirmations ADD COLUMN stars INTEGER DEFAULT NULL;

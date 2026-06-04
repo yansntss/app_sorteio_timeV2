@@ -584,12 +584,17 @@ function renderRsvp(game, myConfirmationId, isFull, isClosed) {
 
   const guest = getGuestConfirmation(gameId);
   if (guest) {
-    return `
-      <div class="rsvp-confirmed">
-        <span class="rsvp-confirmed-icon">✓</span>
-        <div class="rsvp-confirmed-text">Confirmado como convidado: <strong>${esc(guest.name)}</strong></div>
-      </div>
-      <button class="btn btn-ghost" onclick="cancelConfirmation('${esc(guest.id)}', true)">Cancelar presença</button>`;
+    const stillExists = gameData.confirmations.some(c => c.id === guest.id);
+    if (stillExists) {
+      return `
+        <div class="rsvp-confirmed">
+          <span class="rsvp-confirmed-icon">✓</span>
+          <div class="rsvp-confirmed-text">Confirmado como convidado: <strong>${esc(guest.name)}</strong></div>
+        </div>
+        <button class="btn btn-ghost" onclick="cancelConfirmation('${esc(guest.id)}', true)">Cancelar presença</button>`;
+    }
+    clearGuestConfirmation(gameId);
+    setTimeout(() => toast('Sua presença foi removida. Confirme novamente se desejar.'), 0);
   }
 
   return `

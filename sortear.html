@@ -624,6 +624,11 @@ window.addEventListener('load', async () => {
     return;
   }
 
+  if (!currentUser.is_admin) {
+    showAccessDenied();
+    return;
+  }
+
   // 2. Show user header
   renderUserBar();
 
@@ -700,6 +705,18 @@ function showLoginScreen() {
       <h2>Alto Valor FC</h2>
       <p>Faça login para organizar seus rachas</p>
       <a href="/api/auth/login" class="btn-login">🔐 Entrar com Google</a>
+    </div>`;
+}
+
+function showAccessDenied() {
+  document.querySelector('.steps').classList.add('hidden');
+  renderUserBar();
+  document.querySelector('.container').innerHTML = `
+    <div class="panel login-panel">
+      <span class="logo-big">🔒</span>
+      <h2>Acesso Restrito</h2>
+      <p>Somente administradores podem usar o sorteador.</p>
+      <a href="/" class="btn-login" style="text-decoration:none">&#8592; Voltar para Jogos</a>
     </div>`;
 }
 

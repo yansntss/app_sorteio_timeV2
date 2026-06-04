@@ -20,12 +20,17 @@ export async function onRequestGet({ env, data }) {
 }
 
 export async function onRequestPost({ request, env, data }) {
+  const userId = data.user.sub;
+
+  const adminRow = await env.DB.prepare(
+    "SELECT is_admin FROM users WHERE id = ?"
+  ).bind(userId).first();
+  if (!adminRow || adminRow.is_admin !== 1) return error("acesso restrito", 403);
+
   const body = await readJson(request);
   if (!body || !body.mode || !body.config || !Array.isArray(body.teams)) {
     return error("payload invalido: esperado { mode, config, teams }");
   }
-
-  const userId = data.user.sub;
   const id     = newSessionId();
   const now    = Date.now();
 

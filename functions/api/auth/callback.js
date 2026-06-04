@@ -86,6 +86,14 @@ export async function onRequestGet({ request, env }) {
   const now    = Date.now();
   const userId = newSessionId(); // generate an internal ID
 
+  // ADMIN_EMAILS is a comma-separated whitelist. Source of truth on every login:
+  // emails on the list are promoted to admin, others are demoted.
+  const adminEmails = (env.ADMIN_EMAILS || "")
+    .split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdmin = adminEmails.includes(userInfo.email.toLowerCase()) ? 1 : 0;
+
   // Try to find existing user by google_id
   const existing = await env.DB.prepare(
     "SELECT id FROM users WHERE google_id = ?"
@@ -97,16 +105,16 @@ export async function onRequestGet({ request, env }) {
   if (existing) {
     finalUserId = existing.id;
     await env.DB.prepare(
-      "UPDATE users SET email = ?, name = ?, picture = ? WHERE google_id = ?"
+      "UPDATE users SET email = ?, name = ?, picture = ?, is_admin = ? WHERE google_id = ?"
     )
-      .bind(userInfo.email, userInfo.name, userInfo.picture || null, userInfo.id)
+      .bind(userInfo.email, userInfo.name, userInfo.picture || null, isAdmin, userInfo.id)
       .run();
   } else {
     finalUserId = userId;
     await env.DB.prepare(
-      "INSERT INTO users (id, google_id, email, name, picture, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO users (id, google_id, email, name, picture, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
     )
-      .bind(finalUserId, userInfo.id, userInfo.email, userInfo.name, userInfo.picture || null, now)
+      .bind(finalUserId, userInfo.id, userInfo.email, userInfo.name, userInfo.picture || null, isAdmin, now)
       .run();
   }
 

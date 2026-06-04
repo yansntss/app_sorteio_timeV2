@@ -242,7 +242,7 @@
 <div class="user-bar hidden" id="userBar">
   <img class="user-avatar" id="userAvatar" src="" alt="">
   <span class="user-name" id="userName"></span>
-  <a href="/sortear.html" style="text-decoration:none" class="btn-logout">Sorteio</a>
+  <a href="/sortear.html" style="text-decoration:none" class="btn-logout hidden" id="navSorteio">Sorteio</a>
   <a href="/jogadores.html" style="text-decoration:none" class="btn-logout">Jogadores</a>
   <a href="/api/auth/logout" class="btn-logout">Sair</a>
 </div>
@@ -361,6 +361,7 @@ async function boot() {
 
   if (currentUser.is_admin) {
     document.getElementById('fabAdd').classList.remove('hidden');
+    document.getElementById('navSorteio').classList.remove('hidden');
   }
 
   // 2. Load games

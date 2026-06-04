@@ -233,6 +233,13 @@
     .star-pick { display: flex; gap: 1px; margin-bottom: 10px; }
     .star-pick span { font-size: 1.7rem; cursor: pointer; color: var(--text-dim); transition: color .1s; line-height: 1; }
     .star-pick span.lit { color: var(--gold); }
+    .row-stars { display: flex; gap: 1px; flex-shrink: 0; }
+    .row-stars span {
+      font-size: 1rem; cursor: pointer; color: var(--text-dim);
+      transition: color .1s; line-height: 1; padding: 0 1px;
+    }
+    .row-stars span.lit { color: var(--gold); }
+    .row-stars span:hover { color: var(--gold); opacity: .85; }
 
     /* ── ADMIN (COLLAPSIBLE) ────────────────── */
     .admin-section {
@@ -378,7 +385,7 @@ let shareOpen    = false;
 let adminOpen    = false;
 let sorteioState = null;
 let rsvpStars    = 3;
-let sortedNames  = new Set();
+let sortedIds    = new Set(); // confirmation IDs that ended up in a team
 
 function esc(s) {
   return String(s)
@@ -476,10 +483,16 @@ function renderPage() {
   html += `</div>`;
 
   // Players list
+  const sortedCount = sortedIds.size > 0
+    ? confirmations.filter(c => sortedIds.has(c.id)).length
+    : 0;
+  const availableCount = count - sortedCount;
   const selCount = selectionMode ? selectedIds.size : count;
   const panelTitle = selectionMode
     ? `${selCount} presente${selCount !== 1 ? 's' : ''} selecionado${selCount !== 1 ? 's' : ''}`
-    : `${count} Confirmado${count !== 1 ? 's' : ''}`;
+    : sortedCount > 0
+      ? `${availableCount} disponíve${availableCount !== 1 ? 'is' : 'l'} · ${count} confirmado${count !== 1 ? 's' : ''}`
+      : `${count} Confirmado${count !== 1 ? 's' : ''}`;
 
   html += `<div class="panel"><h2>${panelTitle}</h2>`;
   if (selectionMode) {
@@ -491,14 +504,20 @@ function renderPage() {
   }
   html += `<div id="playersList">${renderPlayersList(confirmations)}</div>`;
 
-  if (currentUser && count > 0) {
+  if (isAdmin && count > 0) {
     if (selectionMode) {
       html += `
       <button class="btn btn-primary" style="margin-top:16px" onclick="sortearSelecionados()" ${selCount === 0 ? 'disabled' : ''}>
         ⚽ Sortear${selCount > 0 ? ' (' + selCount + ')' : ''}
       </button>
       <button class="btn btn-ghost" style="margin-top:8px" onclick="cancelSelection()">Cancelar</button>`;
-    } else if (!sorteioState) {
+    } else if (sortedIds.size > 0) {
+      html += `
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-ghost" style="flex:1" onclick="enableSelection()" ${availableCount === 0 ? 'disabled' : ''}>☑ Sortear restantes${availableCount > 0 ? ' (' + availableCount + ')' : ''}</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="restartSorteio()">🔄 Sortear todos</button>
+      </div>`;
+    } else {
       html += `<button class="btn btn-ghost" style="margin-top:16px;width:100%" onclick="enableSelection()">☑ Selecionar quem chegou</button>`;
     }
   }
@@ -585,15 +604,17 @@ function renderPlayersList(confirmations) {
   if (!confirmations.length) {
     return `<p style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:16px 0">Nenhuma confirmação ainda.</p>`;
   }
-  return confirmations.map(c => {
+  const rows = confirmations.map(c => {
     const name = c.user_id ? (c.user_name || 'Usuário') : (c.guest_name || 'Convidado');
+    const wasSorted = sortedIds.has(c.id);
+    if (!selectionMode && wasSorted) return null;
     const avatarHtml = c.user_picture
       ? `<img class="player-avatar" src="${esc(c.user_picture)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="player-initials" style="display:none">${esc(initials(name))}</div>`
       : `<div class="player-initials">${esc(initials(name))}</div>`;
     const guestBadge = !c.user_id ? `<span class="badge-guest">Convidado</span>` : '';
 
     if (selectionMode) {
-      if (sortedNames.has(name)) {
+      if (wasSorted) {
         return `<div class="player-row" style="opacity:.3">
           <div style="width:18px;height:18px;flex-shrink:0"></div>
           ${avatarHtml}
@@ -609,10 +630,18 @@ function renderPlayersList(confirmations) {
       </div>`;
     }
 
-    const starsHtml  = (c.stars != null) ? `<span class="stars-tag">&#9733; ${c.stars}</span>` : '';
+    const starsBlock = isAdmin
+      ? `<div class="row-stars">${[1,2,3,4,5].map(n =>
+          `<span class="${(c.stars != null && n <= c.stars) ? 'lit' : ''}" onclick="adminSetStars('${esc(c.id)}', ${n})">&#9733;</span>`
+        ).join('')}</div>`
+      : ((c.stars != null) ? `<span class="stars-tag">&#9733; ${c.stars}</span>` : '');
     const removeBtn  = isAdmin ? `<button class="remove-btn" onclick="adminRemove('${esc(c.id)}')" title="Remover">&#10005;</button>` : '';
-    return `<div class="player-row">${avatarHtml}<span class="player-name">${esc(name)}</span>${starsHtml}${guestBadge}${removeBtn}</div>`;
-  }).join('');
+    return `<div class="player-row">${avatarHtml}<span class="player-name">${esc(name)}</span>${starsBlock}${guestBadge}${removeBtn}</div>`;
+  }).filter(Boolean);
+  if (!rows.length) {
+    return `<p style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:16px 0">Todos os confirmados já foram sorteados — veja os times abaixo.</p>`;
+  }
+  return rows.join('');
 }
 
 /* ── TOGGLE ───────────────────────────────────────────────────────────── */
@@ -680,6 +709,24 @@ async function cancelConfirmation(id, isGuest) {
 }
 
 /* ── ADMIN ACTIONS ────────────────────────────────────────────────────── */
+async function adminSetStars(id, n) {
+  const conf = gameData.confirmations.find(c => c.id === id);
+  if (conf) conf.stars = n;
+  renderPage();
+  try {
+    const res  = await fetch('/api/confirmations/' + id, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ stars: n }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+  } catch (e) {
+    toast('Erro: ' + e.message);
+    await reloadGame();
+  }
+}
+
 async function adminRemove(id) {
   if (!confirm('Remover esta confirmação?')) return;
   try {
@@ -747,16 +794,22 @@ function enableSelection() {
   selectionMode = true;
   selectedIds = new Set(
     gameData.confirmations
-      .filter(c => !sortedNames.has((c.user_id ? c.user_name : c.guest_name) || ''))
+      .filter(c => !sortedIds.has(c.id))
       .map(c => c.id)
   );
   renderPage();
 }
 function cancelSelection()  { selectionMode = false; selectedIds = new Set(); renderPage(); }
+function restartSorteio() {
+  if (!confirm('Sortear todos os confirmados novamente? Os times atuais serão descartados.')) return;
+  sortedIds = new Set();
+  sorteioState = null;
+  enableSelection();
+}
 function selectAll(val) {
   selectedIds = val
     ? new Set(gameData.confirmations
-        .filter(c => !sortedNames.has((c.user_id ? c.user_name : c.guest_name) || ''))
+        .filter(c => !sortedIds.has(c.id))
         .map(c => c.id))
     : new Set();
   renderPage();
@@ -768,16 +821,12 @@ async function sortearSelecionados() {
   const players  = selected
     .map(c => {
       const name = (c.user_id ? c.user_name : c.guest_name) || '';
-      return name ? { name, stars: c.stars != null ? c.stars : null, isGK: false } : null;
+      return name ? { cid: c.id, name, stars: c.stars != null ? c.stars : null, isGK: false } : null;
     })
     .filter(Boolean);
   if (!players.length) return;
 
-  const total    = players.length;
-  const numTeams = Math.max(2, Math.min(Math.floor(total / 2), 5));
-  const ppTeam   = Math.floor(total / numTeams);
-
-  sorteioState  = { players, config: { numTeams, ppTeam }, mode: 'random', opts: { cap: false, gk: false }, teams: null, leftover: [], voteSession: null };
+  sorteioState  = { players, config: { numTeams: 2, ppTeam: 6 }, mode: 'random', opts: { cap: false, gk: false }, teams: null, leftover: [], voteSession: null };
   selectionMode = false;
   selectedIds   = new Set();
 
@@ -848,17 +897,23 @@ function cancelarSorteio()   { sorteioState = null; renderPage(); }
 function updateSorteioConfig() {
   if (!sorteioState) return;
   sorteioState.config.numTeams = Math.max(2, parseInt(document.getElementById('sNumTeams')?.value) || 2);
-  sorteioState.config.ppTeam   = Math.max(1, parseInt(document.getElementById('sPpTeam')?.value)   || 5);
+  sorteioState.config.ppTeam   = Math.max(1, parseInt(document.getElementById('sPpTeam')?.value)   || 6);
 }
 
 function executarSorteio() {
   if (!sorteioState) return;
   updateSorteioConfig();
+  // Reset sortedIds for the current group before re-adding — prevents
+  // leftover players from staying stuck as "sorted" across re-runs.
+  const currentIds = new Set(sorteioState.players.map(p => p.cid).filter(Boolean));
+  sortedIds = new Set([...sortedIds].filter(id => !currentIds.has(id)));
   const { teams, leftover } = runBuildTeams();
   sorteioState.teams       = teams;
   sorteioState.leftover    = leftover;
   sorteioState.voteSession = null;
-  teams.forEach(t => t.players.forEach(p => sortedNames.add(p.name)));
+  teams.forEach(t => t.players.forEach(p => { if (p.cid) sortedIds.add(p.cid); }));
+  // Defensive: leftover from current sortear must NOT be marked as sorted.
+  leftover.forEach(p => { if (p.cid) sortedIds.delete(p.cid); });
   renderPage();
   setTimeout(() => document.getElementById('sorteioSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 }

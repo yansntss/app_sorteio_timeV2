@@ -1,6 +1,14 @@
 import { json, error, newSessionId, readJson } from "../../_utils.js";
 
 export async function onRequestPost({ request, env, data }) {
+  const user = data?.user;
+  if (!user) return error("nao autenticado", 401);
+
+  const adminRow = await env.DB.prepare(
+    "SELECT is_admin FROM users WHERE id = ?"
+  ).bind(user.sub).first();
+  if (!adminRow || adminRow.is_admin !== 1) return error("acesso restrito", 403);
+
   const body = await readJson(request);
   if (!body || !Array.isArray(body.players) || body.players.length === 0) {
     return error("payload invalido: esperado { players: [...] } nao vazio");

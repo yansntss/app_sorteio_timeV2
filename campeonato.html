@@ -293,24 +293,35 @@ const CAPTAINS = [
 // Capitão do time fixo (recebe os travados abaixo)
 const FIXED_CAPTAIN = 'YAN';
 const FIXED_PLAYERS = [
-  { name: 'Igor',  pos: 'ZAG' },
-  { name: 'Sv',    pos: 'MEI' },
-  { name: 'Rubão', pos: 'MEI' },
+  { name: 'LUCAS',   pos: 'ATA' },
+  { name: 'Rubão',   pos: 'MEI' },
+  { name: 'Sv',      pos: 'MEI' },
+  { name: 'Igor',    pos: 'ZAG' },
+  { name: 'TH',      pos: 'ZAG' },
+  { name: 'Patryck', pos: 'ZAG' },
 ];
 
 // Jogadores que entram no sorteio (distribuídos entre os 3 outros capitães)
 const DRAW_POOL = [
-  { name: 'Dudu',      pos: 'MEI' },
-  { name: 'JOABE',     pos: 'ZAG' },
-  { name: 'LUCAS',     pos: 'ATA' },
-  { name: 'J. JHONES', pos: 'ATA' },
-  { name: 'KAUAN',     pos: 'ZAG' },
-  { name: 'TH',        pos: 'ZAG' },
-  { name: 'IZAQUE',    pos: 'MEI' },
+  { name: 'JOABE',        pos: 'ZAG' },
+  { name: 'KAUAN',        pos: 'ZAG' },
+  { name: 'LEONI',        pos: 'ZAG' },
+  { name: 'Samuel',       pos: 'ZAG' },
+  { name: 'Kaick preto',  pos: 'ZAG' },
+  { name: 'Diogo',        pos: 'ZAG' },
+  { name: 'IZAQUE',       pos: 'MEI' },
+  { name: 'Dudu',         pos: 'MEI' },
+  { name: 'Kaio',         pos: 'MEI' },
+  { name: 'Jhon STRYKER', pos: 'MEI' },
+  { name: 'Jaime',        pos: 'MEI' },
+  { name: 'Tedy',         pos: 'MEI' },
+  { name: 'LELLETE',      pos: 'MEI' },
+  { name: 'VITOR RUIM',   pos: 'MEI' },
+  { name: 'J. JHONES',    pos: 'ATA' },
+  { name: 'Nextage',      pos: 'ATA' },
+  { name: 'Kinho',        pos: 'ATA' },
+  { name: 'Kaick grande', pos: 'ATA' },
 ];
-
-// Quantos sorteados cada capitão (não-fixo) recebe. Soma = DRAW_POOL.length (7).
-const DRAW_SIZES = [3, 2, 2];
 
 // Paletas por time
 const PALETTES = [
@@ -336,6 +347,19 @@ function shuffle(arr) {
   return a;
 }
 function posPill(pos) { return `<span class="pos pos-${pos}">${pos}</span>`; }
+// Ordem de exibição por posição: zaga → meio → ataque
+const POS_ORDER = { ZAG: 0, MEI: 1, ATA: 2 };
+function sortByPos(list) {
+  return [...list].sort((a, b) => POS_ORDER[a.pos] - POS_ORDER[b.pos]);
+}
+// Divide `total` em `n` partes o mais iguais possível; sobra vai pra times aleatórios.
+function splitSizes(total, n) {
+  const base = Math.floor(total / n);
+  const rem  = total - base * n;
+  const sizes = Array.from({ length: n }, () => base);
+  shuffle([...Array(n).keys()]).slice(0, rem).forEach(i => sizes[i]++);
+  return sizes;
+}
 
 /* ── ROSTER PREVIEW ──────────────────────────────────────────────────────── */
 function renderRoster() {
@@ -346,7 +370,7 @@ function renderRoster() {
       ${posPill(c.pos)}
     </div>`).join('');
 
-  const poolItems = [...FIXED_PLAYERS, ...DRAW_POOL];
+  const poolItems = sortByPos([...FIXED_PLAYERS, ...DRAW_POOL]);
   document.getElementById('rosterPool').innerHTML = poolItems.map(p => `
     <div class="r-item">
       <span class="r-name">${esc(p.name)}</span>
@@ -366,8 +390,9 @@ function buildChampionship() {
     target: FIXED_PLAYERS.length,
   };
 
-  // 2) Times dos outros capitães — tamanhos-alvo sorteados (quem leva 3 é aleatório)
-  const sizes = shuffle(DRAW_SIZES);
+  // 2) Times dos outros capitães — divide o pool o mais igual possível.
+  //    Se não dividir exato, os "sobrando" vão pra times sorteados (aleatório).
+  const sizes = splitSizes(DRAW_POOL.length, otherCaps.length);
   const drawTeams = otherCaps.map((c, i) => ({
     captain: c,
     players: [],
@@ -459,7 +484,7 @@ function renderResults(teams) {
         <span class="p-name">${esc(t.captain.name)}</span>
         ${posPill(t.captain.pos)}
       </div>`;
-    const rows = t.players.map(p => `
+    const rows = sortByPos(t.players).map(p => `
       <div class="t-player">
         <div class="p-badge">#</div>
         <span class="p-name">${esc(p.name)}</span>
@@ -486,7 +511,7 @@ function copyResult() {
   if (!currentTeams.length) { toast('⚠️ Sorteie primeiro'); return; }
   const txt = currentTeams.map(t => {
     const head = `${t.name} 👑 ${t.captain.name} (${t.captain.pos})`;
-    const lines = t.players.map(p =>
+    const lines = sortByPos(t.players).map(p =>
       `  • ${p.name} (${p.pos})`).join('\n');
     return `${head}\n${lines}`;
   }).join('\n\n');

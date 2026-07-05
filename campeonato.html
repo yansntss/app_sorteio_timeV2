@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Alto Valor FC – Sorteio de Campeonato</title>
+  <style>
+    :root {
+      --bg:         #07090a;
+      --surface:    #0e1214;
+      --card:       #141a1d;
+      --card2:      #1a2228;
+      --border:     #243038;
+      --green:      #39e073;
+      --green-dim:  #27a350;
+      --green-glow: rgba(57,224,115,.25);
+      --gold:       #f5c842;
+      --gold-glow:  rgba(245,200,66,.3);
+      --blue:       #5ba4f5;
+      --red:        #f06060;
+      --text:       #d8eae0;
+      --text-dim:   #4d6655;
+      --radius:     14px;
+      --shadow:     0 6px 32px rgba(0,0,0,.6);
+      /* position colors */
+      --pos-ata:    #f06060;
+      --pos-mei:    #f5c842;
+      --pos-zag:    #5ba4f5;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(57,224,115,.018) 60px, rgba(57,224,115,.018) 61px);
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    header { text-align: center; padding: 40px 20px 10px; }
+    .logo-ball { font-size: 2.4rem; display: block; margin-bottom: 6px; }
+    header h1 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(2rem, 8vw, 3.6rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #f5c842 30%, #ffe9a3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 24px rgba(245,200,66,.4));
+    }
+    header p {
+      color: var(--text-dim);
+      font-size: .78rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── USER / NAV BAR ─────────────────────── */
+    .nav-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap;
+      max-width: 760px; margin: 0 auto 8px; padding: 6px 14px;
+    }
+    .nav-bar a {
+      color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 4px 12px; font-size: .74rem; text-decoration: none;
+      transition: all .15s; white-space: nowrap;
+    }
+    .nav-bar a:hover { color: var(--green); border-color: var(--green); }
+
+    /* ── CONTAINER ──────────────────────────── */
+    .container { max-width: 760px; margin: 0 auto; padding: 0 14px; }
+
+    /* ── PANEL ──────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .panel .sub { font-size: .8rem; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
+
+    /* ── ROSTER PREVIEW ─────────────────────── */
+    .roster {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+    }
+    .roster-col h3 {
+      font-size: .68rem; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 7px;
+    }
+    .r-item {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; margin-bottom: 6px;
+      font-size: .84rem;
+    }
+    .r-item .r-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .r-item.cap { border-color: rgba(245,200,66,.35); }
+
+    /* ── POSITION PILL ──────────────────────── */
+    .pos {
+      font-size: .58rem; font-weight: 900; letter-spacing: .5px;
+      padding: 2px 6px; border-radius: 5px; flex-shrink: 0;
+      text-transform: uppercase; line-height: 1.4;
+    }
+    .pos-ATA { background: rgba(240,96,96,.14); color: var(--pos-ata); border: 1px solid rgba(240,96,96,.4); }
+    .pos-MEI { background: rgba(245,200,66,.14); color: var(--pos-mei); border: 1px solid rgba(245,200,66,.4); }
+    .pos-ZAG { background: rgba(91,164,245,.14); color: var(--pos-zag); border: 1px solid rgba(91,164,245,.4); }
+
+    .crown { color: var(--gold); flex-shrink: 0; }
+    .lock  { color: var(--green); font-size: .7rem; flex-shrink: 0; }
+
+    /* ── BUTTONS ────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      letter-spacing: .5px; text-transform: uppercase; transition: all .18s;
+    }
+    .btn-primary { background: var(--gold); color: #000; width: 100%; font-size: 1rem; padding: 15px; }
+    .btn-primary:hover { filter: brightness(1.12); box-shadow: 0 0 22px var(--gold-glow); transform: translateY(-1px); }
+    .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* ── RESULTS ────────────────────────────── */
+    .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .team-card {
+      border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      animation: rise .4s ease both;
+    }
+    @keyframes rise { from { opacity:0; transform:translateY(20px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+    .team-hdr { padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .team-title { font-family: Impact, 'Arial Black', sans-serif; font-size: 1.05rem; letter-spacing: 1px; text-transform: uppercase; }
+    .team-tag { font-size: .62rem; opacity: .9; background: rgba(0,0,0,.35); padding: 3px 9px; border-radius: 12px; letter-spacing: .5px; }
+    .team-body { background: var(--card); padding: 8px 14px 12px; }
+    .t-player {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .t-player:last-child { border-bottom: none; }
+    .p-badge {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; flex-shrink: 0;
+    }
+    .p-badge.cap { background: var(--gold); color: #000; font-weight: 900; }
+    .p-name { flex: 1; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .p-name .drawn { color: var(--gold); font-size: .62rem; margin-left: 4px; }
+    .team-foot {
+      background: var(--card); padding: 8px 14px 12px;
+      font-size: .68rem; color: var(--text-dim); letter-spacing: .5px;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+
+    /* ── ACTION ROW ─────────────────────────── */
+    .act-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .act-row .btn { flex: 1; min-width: 130px; }
+
+    /* ── SHUFFLE OVERLAY ────────────────────── */
+    .shuf-overlay {
+      position: fixed; inset: 0;
+      background: rgba(7,9,10,.96); z-index: 500;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .shuf-overlay.on { opacity: 1; pointer-events: all; }
+    .shuf-ball { font-size: 3.2rem; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .shuf-name {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(1.6rem, 7vw, 3.2rem);
+      color: var(--gold);
+      text-transform: uppercase; letter-spacing: 2px;
+      filter: drop-shadow(0 0 22px var(--gold-glow));
+      min-height: 56px; text-align: center;
+    }
+    .shuf-label { font-size: .72rem; letter-spacing: 4px; text-transform: uppercase; color: var(--text-dim); margin-top: 10px; }
+
+    /* ── TOAST ──────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 22px;
+      font-size: .88rem; z-index: 700;
+      transition: transform .28s ease; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .toast.on { transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 520px) {
+      .roster { grid-template-columns: 1fr; }
+      .teams-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo-ball">🏆</span>
+  <h1>Campeonato</h1>
+  <p>Sorteio de Times · Alto Valor FC</p>
+</header>
+
+<div class="nav-bar">
+  <a href="/">⚽ Jogos</a>
+  <a href="/sortear.html">🎲 Sorteio</a>
+  <a href="/jogadores.html">👥 Jogadores</a>
+</div>
+
+<div class="container">
+
+  <!-- ── SETUP ─────────────────────────────── -->
+  <div class="panel" id="setupPanel">
+    <h2>🏆 Elenco do Campeonato</h2>
+   
+
+    <div class="roster">
+      <div class="roster-col">
+        <h3>👑 Capitães (4)</h3>
+        <div id="rosterCaps"></div>
+      </div>
+      <div class="roster-col">
+        <h3>⚽ Para sortear</h3>
+        <div id="rosterPool"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btnSort" onclick="sortear()">🏆 SORTEAR CAMPEONATO</button>
+  </div>
+
+  <!-- ── RESULTS ───────────────────────────── -->
+  <div class="panel hidden" id="resultPanel">
+    <h2>🏆 Times do Campeonato</h2>
+    <div id="teamsGrid" class="teams-grid"></div>
+    <div class="act-row">
+      <button class="btn btn-secondary" onclick="sortear()">🔄 Ressortear</button>
+      <button class="btn btn-secondary" onclick="copyResult()">📋 Copiar</button>
+      <button class="btn btn-ghost" onclick="scrollTop()">⬆️ Elenco</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ══ SHUFFLE OVERLAY ══ -->
+<div class="shuf-overlay" id="shufOverlay">
+  <div class="shuf-ball">⚽</div>
+  <div class="shuf-name" id="shufName">—</div>
+  <div class="shuf-label">Sorteando o campeonato...</div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ELENCO — edite aqui se quiser mudar jogadores/posições/fixos.
+   pos: 'ZAG' | 'MEI' | 'ATA'
+   ───────────────────────────────────────────────────────────────────────── */
+const CAPTAINS = [
+  { name: 'YAN',           pos: 'ATA' },   // dono do time dos fixos
+  { name: 'JOÃO GRANDÃO',  pos: 'ATA' },
+  { name: 'Willian',       pos: 'ATA' },
+  { name: 'L.FAIXA',       pos: 'ZAG' },
+];
+
+// Capitão do time fixo (recebe os travados abaixo)
+const FIXED_CAPTAIN = 'YAN';
+const FIXED_PLAYERS = [
+  { name: 'Igor',  pos: 'ZAG' },
+  { name: 'Sv',    pos: 'MEI' },
+  { name: 'Rubão', pos: 'MEI' },
+];
+
+// Jogadores que entram no sorteio (distribuídos entre os 3 outros capitães)
+const DRAW_POOL = [
+  { name: 'Dudu',      pos: 'MEI' },
+  { name: 'JOABE',     pos: 'ZAG' },
+  { name: 'LUCAS',     pos: 'ATA' },
+  { name: 'J. JHONES', pos: 'ATA' },
+  { name: 'KAUAN',     pos: 'ZAG' },
+  { name: 'TH',        pos: 'ZAG' },
+  { name: 'IZAQUE',    pos: 'MEI' },
+];
+
+// Quantos sorteados cada capitão (não-fixo) recebe. Soma = DRAW_POOL.length (7).
+const DRAW_SIZES = [3, 2, 2];
+
+// Paletas por time
+const PALETTES = [
+  { bg:'#0d2218', accent:'#39e073' },  // YAN
+  { bg:'#0c1a36', accent:'#5ba4f5' },
+  { bg:'#2e0e0e', accent:'#f06060' },
+  { bg:'#2e1a08', accent:'#fb923c' },
+];
+
+let currentTeams = [];
+
+/* ── UTILS ───────────────────────────────────────────────────────────────── */
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = 0 | Math.random()*(i+1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function posPill(pos) { return `<span class="pos pos-${pos}">${pos}</span>`; }
+
+/* ── ROSTER PREVIEW ──────────────────────────────────────────────────────── */
+function renderRoster() {
+  document.getElementById('rosterCaps').innerHTML = CAPTAINS.map(c => `
+    <div class="r-item cap">
+      <span class="crown">👑</span>
+      <span class="r-name">${esc(c.name)}</span>
+      ${posPill(c.pos)}
+    </div>`).join('');
+
+  const poolItems = [...FIXED_PLAYERS, ...DRAW_POOL];
+  document.getElementById('rosterPool').innerHTML = poolItems.map(p => `
+    <div class="r-item">
+      <span class="r-name">${esc(p.name)}</span>
+      ${posPill(p.pos)}
+    </div>`).join('');
+}
+
+/* ── DRAW ALGORITHM ──────────────────────────────────────────────────────── */
+function buildChampionship() {
+  // 1) Time fixo (YAN) — capitão + travados
+  const fixedCap = CAPTAINS.find(c => c.name === FIXED_CAPTAIN);
+  const otherCaps = CAPTAINS.filter(c => c.name !== FIXED_CAPTAIN);
+
+  const yanTeam = {
+    captain: fixedCap,
+    players: FIXED_PLAYERS.map(p => ({ ...p, drawn: false })),
+    target: FIXED_PLAYERS.length,
+  };
+
+  // 2) Times dos outros capitães — tamanhos-alvo sorteados (quem leva 3 é aleatório)
+  const sizes = shuffle(DRAW_SIZES);
+  const drawTeams = otherCaps.map((c, i) => ({
+    captain: c,
+    players: [],
+    target: sizes[i],
+  }));
+
+  // 3) Distribui o pool equilibrando posições.
+  //    Cada jogador vai pro time (com vaga) que tiver MENOS jogadores da posição dele;
+  //    desempate: time mais vazio; depois aleatório.
+  const pool = shuffle(DRAW_POOL);
+  for (const player of pool) {
+    let best = null, bestScore = null;
+    for (const t of shuffle(drawTeams)) {          // shuffle p/ desempate aleatório
+      if (t.players.length >= t.target) continue;  // sem vaga
+      // conta a posição do capitão também, pra equilibrar o time inteiro
+      const roster = [t.captain, ...t.players];
+      const samePos = roster.filter(p => p.pos === player.pos).length;
+      const score = samePos * 100 + t.players.length; // menos da mesma posição, depois menos cheio
+      if (bestScore === null || score < bestScore) { bestScore = score; best = t; }
+    }
+    best.players.push({ ...player, drawn: true });
+  }
+
+  // 4) YAN primeiro, depois os demais (maior time -> menor, só pra apresentação)
+  drawTeams.sort((a, b) => b.target - a.target);
+  const teams = [yanTeam, ...drawTeams];
+
+  // 5) Aplica paletas e nomes
+  teams.forEach((t, i) => {
+    t.bg = PALETTES[i % PALETTES.length].bg;
+    t.accent = PALETTES[i % PALETTES.length].accent;
+    t.name = 'Time ' + t.captain.name;
+  });
+
+  return teams;
+}
+
+/* ── SORTEAR ─────────────────────────────────────────────────────────────── */
+async function sortear() {
+  const btn = document.getElementById('btnSort');
+  btn.disabled = true;
+
+  await animShuffle();
+
+  currentTeams = buildChampionship();
+  renderResults(currentTeams);
+
+  btn.disabled = false;
+}
+
+function animShuffle() {
+  return new Promise(res => {
+    const ov = document.getElementById('shufOverlay');
+    const nm = document.getElementById('shufName');
+    const all = [
+      ...CAPTAINS.map(c => c.name),
+      ...FIXED_PLAYERS.map(p => p.name),
+      ...DRAW_POOL.map(p => p.name),
+    ];
+    ov.classList.add('on');
+    let c = 0;
+    const iv = setInterval(() => {
+      nm.textContent = all[0 | Math.random()*all.length];
+      if (++c >= 22) {
+        clearInterval(iv);
+        ov.classList.remove('on');
+        res();
+      }
+    }, 72);
+  });
+}
+
+/* ── RENDER RESULTS ──────────────────────────────────────────────────────── */
+function posSummary(team) {
+  const all = [team.captain, ...team.players];
+  const counts = { ZAG: 0, MEI: 0, ATA: 0 };
+  all.forEach(p => { counts[p.pos]++; });
+  return ['ZAG','MEI','ATA']
+    .filter(k => counts[k] > 0)
+    .map(k => `${counts[k]} ${k}`)
+    .join(' · ');
+}
+
+function renderResults(teams) {
+  document.getElementById('teamsGrid').innerHTML = teams.map((t, ti) => {
+    const cap = `
+      <div class="t-player">
+        <div class="p-badge cap" title="Capitão">C</div>
+        <span class="p-name">${esc(t.captain.name)}</span>
+        ${posPill(t.captain.pos)}
+      </div>`;
+    const rows = t.players.map(p => `
+      <div class="t-player">
+        <div class="p-badge">#</div>
+        <span class="p-name">${esc(p.name)}</span>
+        ${posPill(p.pos)}
+      </div>`).join('');
+    return `
+      <div class="team-card" style="animation-delay:${ti*.09}s">
+        <div class="team-hdr" style="background:${t.bg};border-bottom:2px solid ${t.accent}">
+          <span class="team-title" style="color:${t.accent}">${esc(t.name)}</span>
+          <span class="team-tag">${t.players.length + 1} jog.</span>
+        </div>
+        <div class="team-body">${cap}${rows}</div>
+        <div class="team-foot">📊 ${posSummary(t)}</div>
+      </div>`;
+  }).join('');
+
+  const panel = document.getElementById('resultPanel');
+  panel.classList.remove('hidden');
+  setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+}
+
+/* ── COPY ────────────────────────────────────────────────────────────────── */
+function copyResult() {
+  if (!currentTeams.length) { toast('⚠️ Sorteie primeiro'); return; }
+  const txt = currentTeams.map(t => {
+    const head = `${t.name} 👑 ${t.captain.name} (${t.captain.pos})`;
+    const lines = t.players.map(p =>
+      `  • ${p.name} (${p.pos})`).join('\n');
+    return `${head}\n${lines}`;
+  }).join('\n\n');
+  navigator.clipboard.writeText(`🏆 Alto Valor FC — Campeonato\n${'─'.repeat(24)}\n${txt}`)
+    .then(() => toast('✅ Copiado! Cole no WhatsApp.'))
+    .catch(() => toast('❌ Não foi possível copiar'));
+}
+
+function scrollTop() {
+  document.getElementById('setupPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ── TOAST ───────────────────────────────────────────────────────────────── */
+let _tt;
+function toast(m) {
+  const el = document.getElementById('toast');
+  el.textContent = m;
+  el.classList.add('on');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+/* ── BOOT ────────────────────────────────────────────────────────────────── */
+renderRoster();
+</script>
+</body>
+</html>

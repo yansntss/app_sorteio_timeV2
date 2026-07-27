@@ -61,6 +61,7 @@ async function bootstrapDevDB(env) {
     `CREATE TABLE IF NOT EXISTS player_profiles (
       id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, name TEXT NOT NULL,
       avg_rating REAL NOT NULL DEFAULT 3.0, vote_count INTEGER NOT NULL DEFAULT 0,
+      total_goals INTEGER NOT NULL DEFAULT 0, total_assists INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
       UNIQUE(owner_id, name), FOREIGN KEY (owner_id) REFERENCES users(id)
     )`,
@@ -81,6 +82,7 @@ async function bootstrapDevDB(env) {
     `CREATE TABLE IF NOT EXISTS game_confirmations (
       id TEXT PRIMARY KEY, game_id TEXT NOT NULL, user_id TEXT, guest_name TEXT,
       confirmed_at INTEGER NOT NULL, added_by TEXT, stars INTEGER DEFAULT NULL,
+      goals INTEGER DEFAULT NULL, assists INTEGER DEFAULT NULL,
       FOREIGN KEY (game_id) REFERENCES games(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
     )`,

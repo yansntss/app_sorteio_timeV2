@@ -7,7 +7,7 @@ export async function onRequestGet({ env, data }) {
   const userId = data.user.sub;
 
   const result = await env.DB.prepare(
-    "SELECT id, name, avg_rating, vote_count FROM player_profiles WHERE owner_id = ? ORDER BY name ASC"
+    "SELECT id, name, avg_rating, vote_count, total_goals, total_assists FROM player_profiles WHERE owner_id = ? ORDER BY name ASC"
   )
     .bind(userId)
     .all();

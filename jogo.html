@@ -240,6 +240,14 @@
     }
     .row-stars span.lit { color: var(--gold); }
     .row-stars span:hover { color: var(--gold); opacity: .85; }
+    .stat-tag { font-size: .7rem; color: var(--text-dim); flex-shrink: 0; white-space: nowrap; }
+    .stat-edit { display: flex; gap: 4px; flex-shrink: 0; }
+    .stat-edit input {
+      width: 34px; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 3px 2px; color: var(--text); text-align: center;
+      font-family: inherit; font-size: .78rem;
+    }
+    .stat-edit input:focus { outline: none; border-color: var(--green); }
 
     /* ── ADMIN (COLLAPSIBLE) ────────────────── */
     .admin-section {
@@ -640,8 +648,15 @@ function renderPlayersList(confirmations) {
           `<span class="${(c.stars != null && n <= c.stars) ? 'lit' : ''}" onclick="adminSetStars('${esc(c.id)}', ${n})">&#9733;</span>`
         ).join('')}</div>`
       : ((c.stars != null) ? `<span class="stars-tag">&#9733; ${c.stars}</span>` : '');
+    const canEditStats = isAdmin || gameData.myConfirmationId === c.id;
+    const statsBlock = canEditStats
+      ? `<div class="stat-edit">
+          <input type="number" min="0" max="99" placeholder="⚽" title="Gols" value="${c.goals != null ? c.goals : ''}" onchange="setPlayerStat('${esc(c.id)}','goals',this.value)">
+          <input type="number" min="0" max="99" placeholder="🎯" title="Assistências" value="${c.assists != null ? c.assists : ''}" onchange="setPlayerStat('${esc(c.id)}','assists',this.value)">
+        </div>`
+      : ((c.goals != null || c.assists != null) ? `<span class="stat-tag">⚽${c.goals ?? 0} 🎯${c.assists ?? 0}</span>` : '');
     const removeBtn  = isAdmin ? `<button class="remove-btn" onclick="adminRemove('${esc(c.id)}')" title="Remover">&#10005;</button>` : '';
-    return `<div class="player-row">${avatarHtml}<span class="player-name">${esc(name)}</span>${starsBlock}${guestBadge}${removeBtn}</div>`;
+    return `<div class="player-row">${avatarHtml}<span class="player-name">${esc(name)}</span>${starsBlock}${statsBlock}${guestBadge}${removeBtn}</div>`;
   }).filter(Boolean);
   if (!rows.length) {
     return `<p style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:16px 0">Todos os confirmados já foram sorteados — veja os times abaixo.</p>`;
@@ -723,6 +738,26 @@ async function adminSetStars(id, n) {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ stars: n }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro');
+  } catch (e) {
+    toast('Erro: ' + e.message);
+    await reloadGame();
+  }
+}
+
+async function setPlayerStat(id, field, value) {
+  const n = value === '' ? null : parseInt(value, 10);
+  if (n !== null && (!Number.isInteger(n) || n < 0)) { toast('Valor inválido'); renderPage(); return; }
+  const conf = gameData.confirmations.find(c => c.id === id);
+  if (conf) conf[field] = n;
+  renderPage();
+  try {
+    const res  = await fetch('/api/confirmations/' + id, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ [field]: n }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro');

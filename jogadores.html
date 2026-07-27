@@ -355,6 +355,7 @@ function renderRow(p) {
         <div class="player-name">${esc(p.name)}</div>
         <div class="player-rating">${Number(p.avg_rating).toFixed(1)} ★</div>
         <div class="player-votes">${p.vote_count} voto${p.vote_count === 1 ? '' : 's'}</div>
+        ${(p.total_goals > 0 || p.total_assists > 0) ? `<div class="player-votes">⚽${p.total_goals} 🎯${p.total_assists}</div>` : ''}
         ${!isEditing ? `
           <button class="action-btn" onclick="startEdit('${esc(p.id)}')">Editar</button>
           <button class="action-btn del" onclick="deletePlayer('${esc(p.id)}', '${esc(p.name)}')">Excluir</button>

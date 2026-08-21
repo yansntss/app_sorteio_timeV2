@@ -1,3 +1,9 @@
+// Gols/assistencias dependem da migration 006 (colunas goals/assists em
+// game_confirmations e total_goals/total_assists em player_profiles).
+// Enquanto ela nao estiver aplicada no D1, mantenha false — as queries
+// param de referenciar essas colunas e o recurso some da UI.
+export const GOALS_ASSISTS_ENABLED = false;
+
 export const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,

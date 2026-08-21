@@ -1,4 +1,4 @@
-import { json, error, readJson } from "../../_utils.js";
+import { json, error, readJson, GOALS_ASSISTS_ENABLED } from "../../_utils.js";
 
 // PATCH /api/confirmations/:id — admin can edit stars/goals/assists for anyone;
 // the confirmation's own owner can edit their own goals/assists (not stars).
@@ -41,6 +41,9 @@ export async function onRequestPatch({ request, params, env, data }) {
 
   for (const field of ["goals", "assists"]) {
     if (!(field in body)) continue;
+    if (!GOALS_ASSISTS_ENABLED) {
+      return error("gols/assistencias desativado", 400);
+    }
     const val = body[field];
     if (val !== null && (typeof val !== "number" || !Number.isInteger(val) || val < 0)) {
       return error(`${field} invalido (inteiro >= 0 ou null)`, 400);

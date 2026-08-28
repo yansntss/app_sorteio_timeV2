@@ -552,6 +552,7 @@ function renderPage() {
         </div>
         <div id="adminMsg"></div>
         ${showToggle ? `<button class="btn-status" style="margin-bottom:8px" onclick="toggleStatus('${toggleStatus}')">${toggleLabel}</button>` : ''}
+        ${count > 0 ? `<button class="btn-finish" id="btnClearList" style="margin-bottom:8px" onclick="adminClearList()">🗑️ Limpar lista de confirmados</button>` : ''}
         <button class="btn-finish" onclick="finishGame()">🏁 Encerrar jogo e aplicar notas</button>
       </div>
     </div>`;
@@ -811,6 +812,31 @@ async function adminAddGuest() {
     await reloadGame();
   }
   if (errs.length) { if (msgEl) { msgEl.className = 'msg msg-err'; msgEl.textContent = errs.join(' | '); } }
+}
+
+async function adminClearList() {
+  const ids = gameData.confirmations.map(c => c.id);
+  if (!ids.length) { toast('Lista já está vazia.'); return; }
+  if (!confirm(`Remover todas as ${ids.length} confirmações? Esta ação não pode ser desfeita.`)) return;
+
+  const btn = document.getElementById('btnClearList');
+  if (btn) { btn.disabled = true; btn.textContent = 'Removendo...'; }
+
+  let removed = 0;
+  for (const id of ids) {
+    try {
+      const res = await fetch('/api/confirmations/' + id, { method: 'DELETE' });
+      if (res.ok) removed++;
+    } catch { /* segue removendo os demais */ }
+  }
+
+  sortedIds     = new Set();
+  sorteioState  = null;
+  selectionMode = false;
+  selectedIds   = new Set();
+
+  toast(`${removed} confirmação${removed !== 1 ? 'ões' : ''} removida${removed !== 1 ? 's' : ''}.`);
+  await reloadGame();
 }
 
 async function toggleStatus(newStatus) {

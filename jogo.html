@@ -967,8 +967,12 @@ function cancelarSorteio()   { sorteioState = null; renderPage(); }
 
 function updateSorteioConfig() {
   if (!sorteioState) return;
-  sorteioState.config.numTeams = Math.max(2, parseInt(document.getElementById('sNumTeams')?.value) || 2);
-  sorteioState.config.ppTeam   = Math.max(1, parseInt(document.getElementById('sPpTeam')?.value)   || 6);
+  // Inputs only exist on the config screen; on "Ressortear" they are gone and
+  // the values already in sorteioState.config must be kept.
+  const numTeamsEl = document.getElementById('sNumTeams');
+  const ppTeamEl   = document.getElementById('sPpTeam');
+  if (numTeamsEl) sorteioState.config.numTeams = Math.max(2, parseInt(numTeamsEl.value) || 2);
+  if (ppTeamEl)   sorteioState.config.ppTeam   = Math.max(1, parseInt(ppTeamEl.value)   || 6);
 }
 
 function executarSorteio() {
